@@ -1,0 +1,4 @@
+name: falloutcore
+version: '1.0-SNAPSHOT'
+main: me.mapacheee.falloutcore.Falloutcore
+api-version: '1.21'
