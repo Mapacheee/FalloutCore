@@ -1,0 +1,3 @@
+database:
+  type: sqlite
+  file: factions.db

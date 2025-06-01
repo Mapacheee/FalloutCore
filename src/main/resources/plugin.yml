@@ -7,9 +7,9 @@ depend: [PacketEvents]
 softdepend: [PlaceholderAPI]
 
 commands:
-  faccion:
-    description: Comandos de facción
-    usage: /faccion [unirse|salir|base]
+  faction:
+    description: Comandos de facciones
+    usage: /faction [create|delete|join|forcejoin|kick|setalias]
   bomba:
     description: Comandos de bombas
     usage: /bomba [c4|nuclear]
@@ -17,4 +17,7 @@ commands:
 permissions:
   fallout.radiationinmune:
     description: Inmune a la radiación
+    default: op
+  falloutcore.factions.admin:
+    description: Permisos de administrador para facciones
     default: op
