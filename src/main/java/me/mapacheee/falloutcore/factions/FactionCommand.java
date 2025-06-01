@@ -6,12 +6,16 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 public class FactionCommand implements CommandExecutor {
     private final FactionManager factionManager = FactionManager.getInstance();
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender,
+                             @NotNull Command cmd,
+                             @NotNull String label,
+                             String[] args) {
         if (args.length == 0) {
             sendHelp(sender);
             return true;
@@ -180,7 +184,6 @@ public class FactionCommand implements CommandExecutor {
             return true;
         }
 
-        // Si es un jugador normal, solo puede kickearse a sí mismo
         if (sender instanceof Player && !sender.hasPermission("falloutcore.factions.admin")) {
             Player player = (Player) sender;
             if (!player.equals(target)) {
