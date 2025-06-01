@@ -11,9 +11,7 @@ public class FactionListener implements Listener {
 
     @EventHandler
     public void onPlayerDamage(EntityDamageByEntityEvent event) {
-        if (event.getDamager() instanceof Player && event.getEntity() instanceof Player) {
-            Player attacker = (Player) event.getDamager();
-            Player victim = (Player) event.getEntity();
+        if (event.getDamager() instanceof Player attacker && event.getEntity() instanceof Player victim) {
 
             if (factionManager.isSameFaction(attacker, victim)) {
                 event.setCancelled(true);
