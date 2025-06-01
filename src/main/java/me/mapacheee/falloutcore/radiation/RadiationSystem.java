@@ -1,32 +1,31 @@
 package me.mapacheee.falloutcore.radiation;
 
+import com.github.retrooper.packetevents.PacketEvents;
+import com.github.retrooper.packetevents.event.PacketListenerAbstract;
 import me.mapacheee.falloutcore.FalloutCore;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.World;
+import me.mapacheee.falloutcore.utils.ArmorUtils;
+import me.mapacheee.falloutcore.utils.ParticleUtils;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.*;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.util.Vector;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
-import me.mapacheee.falloutcore.utils.ArmorUtils;
-
-public class RadiationSystem {
+public class RadiationSystem extends PacketListenerAbstract {
     private static RadiationSystem instance;
     private int currentLevel = 1;
     private int radiationY = 64;
     private BukkitTask radiationTask;
-    private final Map<UUID, Integer> exposureTime = new HashMap<>();
-    private final Map<UUID, Long> lastWarning = new HashMap<>();
+    private final Map<UUID, Integer> exposureTime = new ConcurrentHashMap<>();
+    private final Map<UUID, Long> lastWarning = new ConcurrentHashMap<>();
 
     private static final Map<Integer, RadiationLevel> RADIATION_LEVELS = new HashMap<>();
+    private static final double PARTICLE_DENSITY = 0.5;
 
     static {
         RADIATION_LEVELS.put(1, new RadiationLevel(
@@ -66,13 +65,17 @@ public class RadiationSystem {
 
         RADIATION_LEVELS.put(5, new RadiationLevel(
                 Material.NETHERITE_HELMET,
-                Collections.emptyList(),
+                List.of(
+                        new PotionEffect(PotionEffectType.NAUSEA, 100, 2)
+                ),
                 false,
                 30
         ));
     }
 
-    private RadiationSystem() {}
+    private RadiationSystem() {
+        PacketEvents.getAPI().getEventManager().registerListener(this);
+    }
 
     public static RadiationSystem getInstance() {
         if (instance == null) {
@@ -96,9 +99,14 @@ public class RadiationSystem {
             public void run() {
                 for (Player player : Bukkit.getOnlinePlayers()) {
                     checkPlayer(player);
+
+                    if (!isProtected(player) && isInRadiationZone(player)) {
+                        showRadiationParticles(player);
+                        applyVisualDistortion(player);
+                    }
                 }
             }
-        }.runTaskTimer(FalloutCore.getInstance(), 0, 20);
+        }.runTaskTimerAsynchronously(FalloutCore.getInstance(), 0, 10);
     }
 
     public void stop() {
@@ -119,11 +127,11 @@ public class RadiationSystem {
             case 2 -> 40 + random.nextInt(30);
             case 3 -> 30 + random.nextInt(30);
             case 4 -> 20 + random.nextInt(20);
-            case 5 -> 0 + random.nextInt(30);
+            case 5 -> random.nextInt(30);
             default -> 64;
         };
 
-        String message = "§c¡nivel de radiación cambiado a §4" + currentLevel + "§c! Capa Y: §4" + radiationY;
+        String message = "§c¡Nivel de radiación cambiado a §4" + currentLevel + "§c! Capa Y: §4" + radiationY;
         Bukkit.broadcastMessage(message);
 
         exposureTime.clear();
@@ -153,7 +161,6 @@ public class RadiationSystem {
     private boolean isProtected(Player player) {
         RadiationLevel levelConfig = RADIATION_LEVELS.get(currentLevel);
         if (levelConfig == null) return false;
-
         return ArmorUtils.hasRequiredArmor(player, levelConfig);
     }
 
@@ -206,6 +213,73 @@ public class RadiationSystem {
         );
 
         player.playSound(player.getLocation(), Sound.AMBIENT_BASALT_DELTAS_LOOP, 1.0f, 0.8f);
+    }
+
+    private void showRadiationParticles(Player player) {
+        Particle particleType;
+        int count;
+        double extra;
+
+        switch(currentLevel) {
+            case 1:
+                particleType = Particle.ASH;
+                count = 5;
+                extra = 0.05;
+                break;
+            case 2:
+                particleType = Particle.FALLING_SPORE_BLOSSOM;
+                count = 10;
+                extra = 0.1;
+                break;
+            case 3:
+                particleType = Particle.SOUL_FIRE_FLAME;
+                count = 15;
+                extra = 0.15;
+                break;
+            case 4:
+                particleType = Particle.DRIPPING_OBSIDIAN_TEAR;
+                count = 20;
+                extra = 0.2;
+                break;
+            case 5:
+                particleType = Particle.DRAGON_BREATH;
+                count = 30;
+                extra = 0.25;
+                break;
+            default:
+                return;
+        }
+
+        ParticleUtils.createRadiationHalo(player, particleType, count, extra,
+                currentLevel * 0.2, PARTICLE_DENSITY);
+    }
+
+    private void applyVisualDistortion(Player player) {
+        if (currentLevel >= 4) {
+            Location loc = player.getEyeLocation();
+            Vector dir = loc.getDirection().normalize();
+
+            for (int i = 0; i < 5; i++) {
+                double radius = 0.5 * i;
+                int particles = 10 + i * 5;
+                ParticleUtils.createDistortionWave(
+                        player,
+                        loc,
+                        dir,
+                        radius,
+                        particles,
+                        0.1 * currentLevel
+                );
+            }
+
+            // Efecto de sonido
+            player.playSound(
+                    player.getLocation(),
+                    Sound.ENTITY_ELDER_GUARDIAN_CURSE,
+                    0.7f,
+                    0.8f + (0.1f * currentLevel)
+            );
+        }
     }
 
     public int getCurrentLevel() {
