@@ -1,4 +1,20 @@
 name: falloutcore
 version: '1.0-SNAPSHOT'
-main: me.mapacheee.falloutcore.Falloutcore
+main: me.mapacheee.falloutcore.FalloutCore
 api-version: '1.21'
+
+depend: [PacketEvents]
+softdepend: [PlaceholderAPI]
+
+commands:
+  faccion:
+    description: Comandos de facción
+    usage: /faccion [unirse|salir|base]
+  bomba:
+    description: Comandos de bombas
+    usage: /bomba [c4|nuclear]
+
+permissions:
+  fallout.radiationinmune:
+    description: Inmune a la radiación
+    default: op
