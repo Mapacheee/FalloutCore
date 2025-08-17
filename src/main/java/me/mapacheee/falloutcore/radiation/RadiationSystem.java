@@ -172,18 +172,18 @@ public class RadiationSystem extends PacketListenerAbstract {
             int secondsExposed = exposureTime.getOrDefault(playerId, 0) + 1;
             exposureTime.put(playerId, secondsExposed);
 
-            if (secondsExposed >= levelConfig.getMaxExposureTime()) {
+            if (secondsExposed >= levelConfig.maxExposureTime()) {
                 player.damage(5.0);
                 player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_HURT, 1.0f, 0.5f);
                 return;
             }
         }
 
-        for (PotionEffect effect : levelConfig.getEffects()) {
+        for (PotionEffect effect : levelConfig.effects()) {
             player.removePotionEffect(effect.getType());
         }
 
-        for (PotionEffect effect : levelConfig.getEffects()) {
+        for (PotionEffect effect : levelConfig.effects()) {
             player.addPotionEffect(effect, true);
         }
     }
@@ -202,7 +202,7 @@ public class RadiationSystem extends PacketListenerAbstract {
         String subtitle = "";
 
         if (currentLevel == 5) {
-            int timeLeft = levelConfig.getMaxExposureTime() - exposureTime.getOrDefault(playerId, 0);
+            int timeLeft = levelConfig.maxExposureTime() - exposureTime.getOrDefault(playerId, 0);
             subtitle = "§cProtección crítica! " + timeLeft + "s restantes";
         }
 
@@ -301,44 +301,15 @@ public class RadiationSystem extends PacketListenerAbstract {
         };
     }
 
-    public static class RadiationLevel {
-        private final Material minArmorType;
-        private final List<PotionEffect> effects;
-        private final boolean requiresEnchantment;
-        private final int maxExposureTime;
+    public record RadiationLevel(Material minArmorType, List<PotionEffect> effects, boolean requiresEnchantment,
+                                 int maxExposureTime) {
+            public RadiationLevel(Material minArmorType, List<PotionEffect> effects) {
+                this(minArmorType, effects, false, 0);
+            }
 
-        public RadiationLevel(Material minArmorType, List<PotionEffect> effects) {
-            this(minArmorType, effects, false, 0);
-        }
+            public RadiationLevel(Material minArmorType, List<PotionEffect> effects, boolean requiresEnchantment) {
+                this(minArmorType, effects, requiresEnchantment, 0);
+            }
 
-        public RadiationLevel(Material minArmorType, List<PotionEffect> effects, boolean requiresEnchantment) {
-            this(minArmorType, effects, requiresEnchantment, 0);
-        }
-
-        public RadiationLevel(Material minArmorType,
-                              List<PotionEffect> effects,
-                              boolean requiresEnchantment,
-                              int maxExposureTime) {
-            this.minArmorType = minArmorType;
-            this.effects = effects;
-            this.requiresEnchantment = requiresEnchantment;
-            this.maxExposureTime = maxExposureTime;
-        }
-
-        public Material getMinArmorType() {
-            return minArmorType;
-        }
-
-        public List<PotionEffect> getEffects() {
-            return effects;
-        }
-
-        public boolean requiresEnchantment() {
-            return requiresEnchantment;
-        }
-
-        public int getMaxExposureTime() {
-            return maxExposureTime;
-        }
     }
 }

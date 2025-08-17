@@ -29,7 +29,7 @@ public class ArmorUtils {
         }
 
         Material helmetType = armor[3].getType();
-        int requiredIndex = getMaterialIndex(level.getMinArmorType());
+        int requiredIndex = getMaterialIndex(level.minArmorType());
         int playerIndex = getMaterialIndex(helmetType);
 
         if (playerIndex < requiredIndex) {
