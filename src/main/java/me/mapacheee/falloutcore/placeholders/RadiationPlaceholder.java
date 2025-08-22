@@ -7,24 +7,29 @@ import org.jetbrains.annotations.NotNull;
 
 public class RadiationPlaceholder extends PlaceholderExpansion {
 
+    @Override
     public String onPlaceholderRequest(Player p, @NotNull String params) {
-        if ("level".equals(params))
+        if (p == null) return "";
+
+        //%fallout_radiation_level%
+        if ("level".equalsIgnoreCase(params)) {
             return String.valueOf(RadiationSystem.getInstance().getCurrentLevel());
+        }
         return null;
     }
 
     @Override
     public @NotNull String getIdentifier() {
-        return "";
+        return "fallout_radiation";
     }
 
     @Override
     public @NotNull String getAuthor() {
-        return "";
+        return "Mapacheee";
     }
 
     @Override
     public @NotNull String getVersion() {
-        return "";
+        return "1.0";
     }
 }
