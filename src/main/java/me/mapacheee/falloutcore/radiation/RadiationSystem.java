@@ -2,10 +2,19 @@ package me.mapacheee.falloutcore.radiation;
 
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.PacketListenerAbstract;
-import me.mapacheee.falloutcore.FalloutCore;
+import com.thewinterframework.service.annotation.Service;
+import com.thewinterframework.service.annotation.lifecycle.OnDisable;
+import com.thewinterframework.service.annotation.lifecycle.OnEnable;
+
+import me.mapacheee.falloutcore.FalloutWinterPlugin;
 import me.mapacheee.falloutcore.utils.ArmorUtils;
 import me.mapacheee.falloutcore.utils.ParticleUtils;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -16,11 +25,13 @@ import org.bukkit.util.Vector;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Service
 public class RadiationSystem extends PacketListenerAbstract {
-    private static RadiationSystem instance;
+
     private int currentLevel = 1;
     private int radiationY = 64;
     private BukkitTask radiationTask;
+    private BukkitTask updateTask;
     private final Map<UUID, Integer> exposureTime = new ConcurrentHashMap<>();
     private final Map<UUID, Long> lastWarning = new ConcurrentHashMap<>();
 
@@ -30,7 +41,7 @@ public class RadiationSystem extends PacketListenerAbstract {
     static {
         RADIATION_LEVELS.put(1, new RadiationLevel(
                 Material.LEATHER,
-                Arrays.asList(
+                List.of(
                         new PotionEffect(PotionEffectType.WITHER, 200, 0)
                 )
         ));
@@ -73,26 +84,33 @@ public class RadiationSystem extends PacketListenerAbstract {
         ));
     }
 
-    private RadiationSystem() {
-        PacketEvents.getAPI().getEventManager().registerListener(this);
+    public static RadiationSystem getInstance() {
+        return FalloutWinterPlugin.getService(RadiationSystem.class);
     }
 
-    public static RadiationSystem getInstance() {
-        if (instance == null) {
-            instance = new RadiationSystem();
-        }
-        return instance;
+    @OnEnable
+    void enable() {
+        PacketEvents.getAPI().getEventManager().registerListener(this);
+        start();
+    }
+
+    @OnDisable
+    void disable() {
+        stop();
+        PacketEvents.getAPI().getEventManager().unregisterListener(this);
     }
 
     public void start() {
         stop();
 
-        new BukkitRunnable() {
+        final org.bukkit.plugin.Plugin plugin = FalloutWinterPlugin.getPlugin(FalloutWinterPlugin.class);
+
+        updateTask = new BukkitRunnable() {
             @Override
             public void run() {
                 updateRadiationLevel();
             }
-        }.runTaskTimer(FalloutCore.getInstance(), 0, 20 * 60 * 5);
+        }.runTaskTimer(plugin, 0L, 20L * 60L * 5L);
 
         radiationTask = new BukkitRunnable() {
             @Override
@@ -106,13 +124,17 @@ public class RadiationSystem extends PacketListenerAbstract {
                     }
                 }
             }
-        }.runTaskTimerAsynchronously(FalloutCore.getInstance(), 0, 10);
+        }.runTaskTimerAsynchronously(plugin, 0L, 10L);
     }
 
     public void stop() {
         if (radiationTask != null) {
             radiationTask.cancel();
             radiationTask = null;
+        }
+        if (updateTask != null) {
+            updateTask.cancel();
+            updateTask = null;
         }
         exposureTime.clear();
         lastWarning.clear();
@@ -122,7 +144,7 @@ public class RadiationSystem extends PacketListenerAbstract {
         Random random = new Random();
         currentLevel = random.nextInt(5) + 1;
 
-        radiationY = switch(currentLevel) {
+        radiationY = switch (currentLevel) {
             case 1 -> 60 + random.nextInt(20);
             case 2 -> 40 + random.nextInt(30);
             case 3 -> 30 + random.nextInt(30);
@@ -220,7 +242,7 @@ public class RadiationSystem extends PacketListenerAbstract {
         int count;
         double extra;
 
-        switch(currentLevel) {
+        switch (currentLevel) {
             case 1:
                 particleType = Particle.ASH;
                 count = 5;
@@ -272,7 +294,6 @@ public class RadiationSystem extends PacketListenerAbstract {
                 );
             }
 
-            // Efecto de sonido
             player.playSound(
                     player.getLocation(),
                     Sound.ENTITY_ELDER_GUARDIAN_CURSE,
@@ -291,7 +312,7 @@ public class RadiationSystem extends PacketListenerAbstract {
     }
 
     public String getRadiationLevelName() {
-        return switch(currentLevel) {
+        return switch (currentLevel) {
             case 1 -> "Bajo";
             case 2 -> "Moderado";
             case 3 -> "Alto";
@@ -303,13 +324,13 @@ public class RadiationSystem extends PacketListenerAbstract {
 
     public record RadiationLevel(Material minArmorType, List<PotionEffect> effects, boolean requiresEnchantment,
                                  int maxExposureTime) {
-            public RadiationLevel(Material minArmorType, List<PotionEffect> effects) {
-                this(minArmorType, effects, false, 0);
-            }
+        public RadiationLevel(Material minArmorType, List<PotionEffect> effects) {
+            this(minArmorType, effects, false, 0);
+        }
 
-            public RadiationLevel(Material minArmorType, List<PotionEffect> effects, boolean requiresEnchantment) {
-                this(minArmorType, effects, requiresEnchantment, 0);
-            }
+        public RadiationLevel(Material minArmorType, List<PotionEffect> effects, boolean requiresEnchantment) {
+            this(minArmorType, effects, requiresEnchantment, 0);
+        }
 
     }
 }
