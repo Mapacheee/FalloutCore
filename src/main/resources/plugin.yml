@@ -1,6 +1,6 @@
-name: falloutcore
+name: FalloutCore
 version: '1.0-SNAPSHOT'
-main: me.mapacheee.falloutcore.FalloutCore
+main: me.mapacheee.falloutcore.FalloutWinterPlugin
 api-version: '1.21'
 
 depend: [PacketEvents]
@@ -9,15 +9,24 @@ softdepend: [PlaceholderAPI]
 commands:
   faction:
     description: Comandos de facciones
-    usage: /faction [create|delete|join|forcejoin|kick|setalias]
-  bomba:
-    description: Comandos de bombas
-    usage: /bomba [c4|nuclear]
+    usage: /faction [create|delete|join|forcejoin|kick|setalias|info]
+    aliases: [f]
+
+  radiation:
+    description: Comandos del sistema de radiación
+    usage: /radiation [info|setlevel|setheight|check|immunity]
+    aliases: [rad]
 
 permissions:
-  fallout.radiationinmune:
+  falloutcore.radiation.immune:
     description: Inmune a la radiación
     default: op
-  falloutcore.factions.admin:
+  falloutcore.radiation.admin:
+    description: Permisos de administrador para el sistema de radiación
+    default: op
+  falloutcore.faction.admin:
     description: Permisos de administrador para facciones
     default: op
+  falloutcore.faction.use:
+    description: Permite usar comandos básicos de facciones
+    default: true

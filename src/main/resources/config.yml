@@ -1,3 +1,30 @@
+faction:
+  enabled: true
+  admin-only-create: true
+  enable-friendly-fire: false
+  max-factions: 10
+  max-members-per-faction: 20
+  max-name-length: 16
+  max-alias-length: 4
+  nexus-points-per-destroy: 10
+  enable-nexus-system: true
+
+radiation:
+  enabled: true
+  enable-sound: true
+  min-level: 1
+  max-level: 5
+  starting-height: 80
+  change-interval-minutes: 15
+  damage-per-level: 2.0
+  effect-duration-seconds: 30
+  enable-particles: true
+
 database:
-  type: sqlite
-  file: factions.db
+  type: "sqlite"
+  host: "localhost"
+  port: 3306
+  database: "falloutcore"
+  username: ""
+  password: ""
+  table-prefix: "fc_"

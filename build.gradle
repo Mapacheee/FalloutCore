@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'me.mapacheee'
-version = '1.0-SNAPSHOT'
+version = '1.0'
 
 repositories {
     mavenCentral()
@@ -27,16 +27,20 @@ repositories {
 dependencies {
     api("com.thewinterframework:paper:1.0.4")
     annotationProcessor("com.thewinterframework:paper:1.0.4")
+    api('com.thewinterframework:configuration:1.0.1')
+    annotationProcessor('com.thewinterframework:configuration:1.0.1')
+    api('com.thewinterframework:command:1.0.1')
+    annotationProcessor('com.thewinterframework:command:1.0.1')
+
+    implementation 'com.github.retrooper:packetevents-spigot:2.9.5'
+    implementation 'org.spongepowered:configurate-yaml:4.2.0-SNAPSHOT'
     compileOnly("io.papermc.paper:paper-api:1.21.5-R0.1-SNAPSHOT")
-    implementation 'com.github.retrooper:packetevents-spigot:2.8.0'
     compileOnly 'me.clip:placeholderapi:2.11.6'
+
 }
 
 tasks {
     runServer {
-        // Configure the Minecraft version for our task.
-        // This is the only required configuration besides applying the plugin.
-        // Your plugin's jar (or shadowJar if present) will be used automatically.
         minecraftVersion("1.21")
     }
 }

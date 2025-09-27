@@ -1,22 +1,121 @@
+general:
+  prefix: "poto"
+  no-permission: "&cNo tienes permisos para usar este comando."
+  players-only: "&cSolo los jugadores pueden usar este comando."
+  player-not-found: "&cJugador &e{player} &cno encontrado."
+  unknown-command: "&cComando desconocido. Usa &e/fallout help &cpara ver los comandos disponibles."
+  reload-complete: "&aConfiguración recargada exitosamente."
+
 factions:
-  created: "&aFacción {faction} creada con alias {alias}"
-  deleted: "&aFacción {faction} eliminada"
-  joined: "&aTe has unido a la facción {faction}"
-  left: "&aHas abandonado tu facción"
-  forced-join: "&a{player} ha sido asignado a la facción {faction}"
-  kicked: "&aHas expulsado a {player} de la facción"
-  player-kicked: "&cHas sido expulsado de la facción {faction}"
-  not-in-faction: "&cNo estás en una facción"
-  faction-not-found: "&cFacción no encontrada"
-  player-not-found: "&cJugador no encontrado"
-  already-in-faction: "&cYa estás en una facción"
-  no-permission: "&cNo tienes permiso para esto"
-  faction-exists: "&cYa existe una facción con ese nombre o alias"
-  player-only: "&cEste comando solo puede ser usado por jugadores"
-  usage:
-    create: "&cUso: /faction create <nombre> <alias>"
-    delete: "&cUso: /faction delete <nombre>"
-    join: "&cUso: /faction join <nombre>"
-    forcejoin: "&cUso: /faction forcejoin <jugador> <facción>"
-    kick: "&cUso: /faction kick <jugador>"
-    setalias: "&cUso: /faction setalias <facción> <nuevo-alias>"
+  help-message: |
+    &6=== Comandos de Facciones ===
+    &e/faction info &7- Ver información de tu facción
+    &e/faction join <nombre> &7- Unirse a una facción
+    &e/faction leave &7- Salir de tu facción actual
+
+  admin-help-message: |
+    &c=== Comandos de Admin ===
+    &e/faction create <nombre> <alias> &7- Crear una facción
+    &e/faction delete <nombre> &7- Eliminar una facción
+    &e/faction forcejoin <jugador> <facción> &7- Forzar unión de jugador
+    &e/faction kick <jugador> &7- Expulsar jugador de su facción
+    &e/faction setalias <facción> <alias> &7- Cambiar alias de facción
+    &e/faction list &7- Listar todas las facciones
+
+  unknown-subcommand: "&cSubcomando &e{subcommand} &cdesconocido. Usa &e/faction &cpara ver la ayuda."
+
+  create-usage: "&cUso: &e/faction create <nombre> <alias>"
+  faction-created: "&a¡Facción &e{name} &acreada exitosamente con alias &e{alias}&a!"
+  faction-already-exists: "&cLa facción &e{name} &cya existe."
+  max-factions-reached: "&cSe ha alcanzado el límite máximo de facciones (&e{max}&c)."
+  name-toolong: "&cEl nombre de la facción es demasiado largo (máximo &e{max} &ccaracteres)."
+  alias-toolong: "&cEl alias de la facción es demasiado largo (máximo &e{max} &ccaracteres)."
+
+  delete-usage: "&cUso: &e/faction delete <nombre>"
+  faction-deleted: "&aFacción &e{name} &aeliminada exitosamente."
+  faction-not-found: "&cFacción &e{name} &cno encontrada."
+
+  join-usage: "&cUso: &e/faction join <nombre>"
+  joined-faction: "&a¡Te has unido a la facción &e{faction}&a!"
+  already-in-faction: "&cYa estás en una facción. Usa &e/faction leave &cpara salir primero."
+  faction-full: "&cLa facción &e{faction} &cestá llena."
+  not-in-faction: "&cNo estás en ninguna facción."
+
+  force-join-usage: "&cUso: &e/faction forcejoin <jugador> <facción>"
+  player-force-joined: "&aEl jugador &e{player} &aha sido forzado a unirse a &e{faction}&a."
+  force-joined-notification: "&aHas sido añadido a la facción &e{faction} &apor un administrador."
+
+  kick-usage: "&cUso: &e/faction kick <jugador>"
+  player-kicked: "&aEl jugador &e{player} &aha sido expulsado de &e{faction}&a."
+  kicked-notification: "&cHas sido expulsado de la facción &e{faction}&c."
+  player-not-in-faction: "&cEl jugador &e{player} &cno está en ninguna facción."
+
+  set-alias-usage: "&cUso: &e/faction setalias <facción> <nuevo_alias>"
+  alias-changed: "&aAlias de la facción &e{faction} &acambiado a &e{alias}&a."
+  faction-info: |
+    &6=== Información de Facción ===
+    &eNombre: &f{name}
+    &eAlias: &f{alias}
+    &eMiembros: &f{members}&7/&f{maxMembers}
+    &ePuntos de Nexo: &f{points}
+
+  faction-list-header: "&6=== Lista de Facciones ==="
+  faction-list-item: "&e{name} &7(&f{alias}&7) &7- &f{members} miembros"
+  no-factions-exist: "&7No existen facciones actualmente."
+
+  left-faction: "&aHas salido de la facción &e{faction}&a."
+
+  friendly-fire-blocked: "&cNo puedes dañar a miembros de tu propia facción!"
+
+  no-permission: "&cNo tienes permisos para usar este comando."
+  players-only: "&cSolo los jugadores pueden usar este comando."
+  player-not-found: "&cJugador &e{player} &cno encontrado."
+
+radiation:
+  radiationWarning: "&c⚠ ¡PELIGRO! Entrando en zona de radiación nivel {level}"
+  radiationSafe: "&aHas salido de la zona de radiación."
+  enter-radiation: "&c⚠ &fHas entrado en una zona de radiación nivel &e{level}&f desde altura Y&e{height}&f!"
+  exit-radiation: "&a✓ &fHas salido de la zona de radiación."
+  level-changed: "&6⚡ &fEl nivel de radiación ha cambiado a &e{level} &fdesde altura Y&e{height}&f."
+  armor-protection: "&a🛡 &fTu armadura te protege de la radiación."
+  armor-degrading: "&e⚠ &fTu armadura se está deteriorando por la radiación."
+  taking-damage: "&fEstás recibiendo &e{damage} &fde daño por radiación nivel &e{level}&f!"
+  immune-message: "&fEres inmune a la radiación."
+  unknown-subcommand: "&cSubcomando &e{subcommand} &cdesconocido. Usa &e/radiation &cpara ver la ayuda."
+  system-status: "&6=== Estado del Sistema de Radiación ==="
+  current-level: "&eNivel actual: &f{level}&7/&f{maxLevel}"
+  radiation-height: "&eAltura de radiación: &fY {height}"
+  players-in-radiation: "&eJugadores en radiación: &f{count}"
+  system-enabled: "&aActivo"
+  system-disabled: "&cDesactivado"
+  system-state: "&eEstado: &f{status}"
+  level-set-usage: "&cUso: &e/radiation setlevel <1-5>"
+  level-set: "&aNivel de radiación establecido a: &e{level}"
+  level-out-of-range: "&cEl nivel debe estar entre {min} y {max}"
+  height-set-usage: "&cUso: &e/radiation setheight <altura>"
+  height-set: "&aAltura de radiación establecida a: &eY {height}"
+  height-out-of-range: "&cLa altura debe estar entre -64 y 320"
+  invalid-number: "&cDebes especificar un número válido"
+  specify-player-console: "&cDebes especificar un jugador desde la consola"
+  player-status-header: "&6=== Estado de Radiación: &e{player} &6==="
+  in-radiation-status: "&eEn zona de radiación: {status}"
+  immune-status: "&eInmune: {status}"
+  armor-protection-status: "&eProtección de armadura: &f{armor} &7(Nivel {level})"
+  player-height-status: "&eAltura actual: &fY {height}"
+  radiation-height-status: "&eAltura de radiación: &fY {height}"
+  in-radiation-yes: "&cSí"
+  in-radiation-no: "&aNo"
+  immune-true: "&aVerdadero"
+  immune-false: "&cFalso"
+  current-height: "&eAltura actual: &fY {height}"
+  player-immune: "&aEl jugador &e{player} &aes inmune a la radiación"
+  player-not-immune: "&cEl jugador &e{player} &cNO es inmune a la radiación"
+  immunity-instructions: "&7Para otorgar inmunidad usa: &e/lp user {player} permission set falloutcore.radiation.immune true"
+  help-header: "&6=== Comandos de Radiación ==="
+  help-info: "&e/radiation info &7- Ver estado del sistema"
+  help-check: "&e/radiation check [jugador] &7- Verificar estado de jugador"
+  help-immunity: "&e/radiation immunity [jugador] &7- Ver inmunidad de jugador"
+  admin-help-header: "&c=== Comandos de Admin ==="
+  admin-help-set-level: "&e/radiation setlevel <1-5> &7- Establecer nivel de radiación"
+  admin-help-set-height: "&e/radiation setheight <altura> &7- Establecer altura de radiación"
+

@@ -1,4 +1,4 @@
-package me.mapacheee.falloutcore.utils;
+package me.mapacheee.falloutcore.shared.util;
 
 import org.bukkit.Location;
 import org.bukkit.Particle;
