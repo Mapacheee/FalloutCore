@@ -7,6 +7,7 @@ import com.thewinterframework.service.annotation.lifecycle.OnEnable;
 import me.mapacheee.falloutcore.shared.config.Config;
 import me.mapacheee.falloutcore.shared.config.ConfigService;
 import me.mapacheee.falloutcore.shared.util.MessageUtil;
+import me.mapacheee.falloutcore.shared.effects.EffectsService;
 import me.mapacheee.falloutcore.radiation.event.RadiationLevelChangeEvent;
 import me.mapacheee.falloutcore.radiation.event.RadiationEnterEvent;
 import me.mapacheee.falloutcore.radiation.event.RadiationExitEvent;
@@ -34,6 +35,7 @@ public class RadiationService {
     private final ConfigService configService;
     private final MessageUtil messageUtil;
     private final Plugin plugin;
+    private final EffectsService effectsService;
 
     private int currentRadiationLevel = 1;
     private int currentRadiationHeight = 80;
@@ -46,11 +48,13 @@ public class RadiationService {
     private BukkitTask levelChangeTask;
 
     @Inject
-    public RadiationService(Logger logger, ConfigService configService, MessageUtil messageUtil, Plugin plugin) {
+    public RadiationService(Logger logger, ConfigService configService, MessageUtil messageUtil,
+                            Plugin plugin, EffectsService effectsService) {
         this.logger = logger;
         this.configService = configService;
         this.messageUtil = messageUtil;
         this.plugin = plugin;
+        this.effectsService = effectsService;
     }
 
     @OnEnable
@@ -114,6 +118,8 @@ public class RadiationService {
 
             if (!enterEvent.isCancelled()) {
                 playersInRadiation.put(player.getUniqueId(), true);
+                // Iniciar efectos visuales de radiación
+                effectsService.startRadiationEffects(player, currentRadiationLevel);
             }
         } else if (!inRadiation && wasInRadiation) {
             RadiationExitEvent exitEvent = new RadiationExitEvent(player, currentRadiationLevel);
@@ -121,6 +127,8 @@ public class RadiationService {
 
             if (!exitEvent.isCancelled()) {
                 playersInRadiation.put(player.getUniqueId(), false);
+                // Detener efectos visuales de radiación
+                effectsService.stopRadiationEffects(player);
             }
         }
 
@@ -276,6 +284,9 @@ public class RadiationService {
                 player.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, duration, 0));
             }
         }
+
+        // Efectos visuales
+        effectsService.playRadiationEffect(player, currentRadiationLevel);
     }
 
     private void changeRadiationLevel() {
