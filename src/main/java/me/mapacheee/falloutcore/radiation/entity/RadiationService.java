@@ -135,13 +135,10 @@ public class RadiationService {
                 String soundTypeName = configService.getConfig().radiation().soundType();
                 Sound sound = Registry.SOUNDS.get(NamespacedKey.minecraft(soundTypeName.toLowerCase().replace("_", ".")));
 
-                if (sound == null) {
-                    sound = Sound.valueOf(soundTypeName.toUpperCase());
-                }
-
                 float volume = configService.getConfig().radiation().soundVolume();
                 float pitch = configService.getConfig().radiation().soundPitch();
 
+                assert sound != null;
                 player.playSound(player.getLocation(), sound, volume, pitch);
             } catch (IllegalArgumentException e) {
                 logger.warn("Tipo de sonido inválido en config: {}. Usando sonido por defecto.", configService.getConfig().radiation().soundType());
@@ -157,9 +154,7 @@ public class RadiationService {
         boolean wasProtected = previousProtection.level >= currentRadiationLevel;
 
         if (isProtected && (!wasProtected || !armorProtectionShown.getOrDefault(playerId, false))) {
-            messageUtil.sendRadiationTitle(player, "radiationArmorTitle", "radiationArmorSubtitle",
-                "level", String.valueOf(currentRadiationLevel),
-                "armor", currentProtection.displayName);
+            messageUtil.sendRadiationArmorProtectionTitle(player, currentProtection.displayName, currentRadiationLevel);
             armorProtectionShown.put(playerId, true);
         }
 
@@ -180,9 +175,7 @@ public class RadiationService {
             player.damage(damage);
             applyRadiationEffects(player);
 
-            messageUtil.sendRadiationTitle(player, "radiationDamageTitle", "radiationDamageSubtitle",
-                "damage", String.valueOf(damage),
-                "level", String.valueOf(currentRadiationLevel));
+            messageUtil.sendRadiationDamageTitle(player, damage, currentRadiationLevel);
             lastDamageTime.put(playerId, currentTime);
         }
     }
@@ -229,7 +222,6 @@ public class RadiationService {
             player.getInventory().getBoots()
         };
 
-        // Usar valores configurables para el daño de armadura
         int minDamage = configService.getConfig().radiation().armorDamageMin();
         int maxDamage = configService.getConfig().radiation().armorDamageMax();
 
@@ -254,7 +246,6 @@ public class RadiationService {
             }
         }
 
-        // Eliminar el mensaje de daño a armadura - ya no se envía ningún mensaje
     }
 
     private void applyRadiationEffects(Player player) {
@@ -311,12 +302,8 @@ public class RadiationService {
         }
 
         for (Player player : Bukkit.getOnlinePlayers()) {
-            messageUtil.sendRadiationMessage(player, "levelChanged",
-                "level", String.valueOf(currentRadiationLevel),
-                "height", String.valueOf(currentRadiationHeight),
-                "oldLevel", String.valueOf(oldLevel),
-                "oldHeight", String.valueOf(oldHeight)
-            );
+            messageUtil.sendRadiationLevelChangedMessage(player, currentRadiationLevel,
+                    currentRadiationHeight, oldLevel, oldHeight);
         }
 
         logger.info("Nivel de radiación cambiado: {} -> {} | Altura: {} -> {}",
@@ -347,7 +334,8 @@ public class RadiationService {
     }
 
     public void forceRadiationLevel(int level) {
-        if (level >= configService.getConfig().radiation().minLevel() && level <= configService.getConfig().radiation().maxLevel()) {
+        if (level >= configService.getConfig().radiation().minLevel() && level <= configService.getConfig()
+                    .radiation().maxLevel()) {
             currentRadiationLevel = level;
             logger.info("Nivel de radiación forzado a: {}", level);
         }

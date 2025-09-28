@@ -36,28 +36,28 @@ public final class FactionCommand {
     @Permission("falloutcore.faction.admin")
     public void handleCreateFaction(Source sender, @Argument("name") String name, @Argument("alias") String alias) {
         if (configService.getConfig().faction().adminOnlyCreate() && !sender.source().hasPermission("falloutcore.faction.admin")) {
-            messageUtil.sendFactionMessage(sender.source(), "noPermission");
+            messageUtil.sendNoPermissionMessage(sender.source());
             return;
         }
 
         if (name.length() > configService.getConfig().faction().maxNameLength()) {
-            messageUtil.sendFactionMessage(sender.source(), "nameToolong", "max", String.valueOf(configService.getConfig().faction().maxNameLength()));
+            messageUtil.sendFactionNameTooLongMessage(sender.source(), configService.getConfig().faction().maxNameLength());
             return;
         }
 
         if (alias.length() > configService.getConfig().faction().maxAliasLength()) {
-            messageUtil.sendFactionMessage(sender.source(), "aliasToolong", "max", String.valueOf(configService.getConfig().faction().maxAliasLength()));
+            messageUtil.sendFactionAliasTooLongMessage(sender.source(), configService.getConfig().faction().maxAliasLength());
             return;
         }
 
         if (factionService.createFaction(name, alias)) {
-            messageUtil.sendFactionMessage(sender.source(), "factionCreated", "faction", name);
+            messageUtil.sendFactionCreatedMessage(sender.source(), name);
             logger.info("Faction '{}' created by {}", name, sender.source().getName());
         } else {
             if (factionService.factionExists(name)) {
-                messageUtil.sendFactionMessage(sender.source(), "factionAlreadyExists", "faction", name);
+                messageUtil.sendFactionAlreadyExistsMessage(sender.source(), name);
             } else {
-                messageUtil.sendFactionMessage(sender.source(), "maxFactionsReached", "max", String.valueOf(configService.getConfig().faction().maxFactions()));
+                messageUtil.sendMaxFactionsReachedMessage(sender.source(), configService.getConfig().faction().maxFactions());
             }
         }
     }
@@ -66,10 +66,10 @@ public final class FactionCommand {
     @Permission("falloutcore.faction.admin")
     public void handleDeleteFaction(Source sender, @Argument("name") String name) {
         if (factionService.deleteFaction(name)) {
-            messageUtil.sendFactionMessage(sender.source(), "factionDeleted", "faction", name);
+            messageUtil.sendFactionDeletedMessage(sender.source(), name);
             logger.info("Faction '{}' deleted by {}", name, sender.source().getName());
         } else {
-            messageUtil.sendFactionMessage(sender.source(), "factionNotFound", "faction", name);
+            messageUtil.sendFactionNotFoundMessage(sender.source(), name);
         }
     }
 
@@ -81,18 +81,18 @@ public final class FactionCommand {
         }
 
         if (factionService.getPlayerFaction(player) != null) {
-            messageUtil.sendFactionMessage(sender.source(), "alreadyInFaction");
+            messageUtil.sendAlreadyInFactionMessage(sender.source());
             return;
         }
 
         if (factionService.joinFaction(player, factionName)) {
-            messageUtil.sendFactionMessage(sender.source(), "playerJoined", "player", player.getName(), "faction", factionName);
+            messageUtil.sendPlayerJoinedFactionMessage(sender.source(), player.getName(), factionName);
             logger.info("Player '{}' joined faction '{}'", player.getName(), factionName);
         } else {
             if (!factionService.factionExists(factionName)) {
-                messageUtil.sendFactionMessage(sender.source(), "factionNotFound", "faction", factionName);
+                messageUtil.sendFactionNotFoundMessage(sender.source(), factionName);
             } else {
-                messageUtil.sendFactionMessage(sender.source(), "factionFull");
+                messageUtil.sendFactionFullMessage(sender.source());
             }
         }
     }
@@ -101,11 +101,11 @@ public final class FactionCommand {
     @Permission("falloutcore.faction.admin")
     public void handleForceJoinFaction(Source sender, @Argument("player") Player target, @Argument("faction") String factionName) {
         if (factionService.forceJoinFaction(target, factionName)) {
-            messageUtil.sendFactionMessage(sender.source(), "playerForceJoined", "player", target.getName(), "faction", factionName);
-            messageUtil.sendFactionMessage(target, "forceJoinedNotification", "faction", factionName);
+            messageUtil.sendPlayerForceJoinedMessage(sender.source(), target.getName(), factionName);
+            messageUtil.sendForceJoinedNotificationMessage(target, factionName);
             logger.info("Player '{}' was force-joined to faction '{}' by {}", target.getName(), factionName, sender.source().getName());
         } else {
-            messageUtil.sendFactionMessage(sender.source(), "factionNotFound", "faction", factionName);
+            messageUtil.sendFactionNotFoundMessage(sender.source(), factionName);
         }
     }
 
@@ -114,13 +114,13 @@ public final class FactionCommand {
     public void handleKickPlayer(Source sender, @Argument("player") Player target) {
         Faction faction = factionService.getPlayerFaction(target);
         if (faction == null) {
-            messageUtil.sendFactionMessage(sender.source(), "playerNotInFaction", "player", target.getName());
+            messageUtil.sendPlayerNotInFactionMessage(sender.source(), target.getName());
             return;
         }
 
         if (factionService.kickPlayer(target)) {
-            messageUtil.sendFactionMessage(sender.source(), "playerKicked", "player", target.getName(), "faction", faction.getName());
-            messageUtil.sendFactionMessage(target, "kickedNotification", "faction", faction.getName());
+            messageUtil.sendPlayerKickedMessage(sender.source(), target.getName(), faction.getName());
+            messageUtil.sendKickedNotificationMessage(target, faction.getName());
             logger.info("Player '{}' was kicked from faction '{}' by {}", target.getName(), faction.getName(), sender.source().getName());
         }
     }
@@ -129,15 +129,15 @@ public final class FactionCommand {
     @Permission("falloutcore.faction.admin")
     public void handleSetFactionAlias(Source sender, @Argument("faction") String factionName, @Argument("alias") String newAlias) {
         if (newAlias.length() > configService.getConfig().faction().maxAliasLength()) {
-            messageUtil.sendFactionMessage(sender.source(), "aliasToolong", "max", String.valueOf(configService.getConfig().faction().maxAliasLength()));
+            messageUtil.sendFactionAliasTooLongMessage(sender.source(), configService.getConfig().faction().maxAliasLength());
             return;
         }
 
         if (factionService.setFactionAlias(factionName, newAlias)) {
-            messageUtil.sendFactionMessage(sender.source(), "aliasChanged", "faction", factionName, "alias", newAlias);
+            messageUtil.sendFactionAliasChangedMessage(sender.source(), factionName, newAlias);
             logger.info("Faction '{}' alias changed to '{}' by {}", factionName, newAlias, sender.source().getName());
         } else {
-            messageUtil.sendFactionMessage(sender.source(), "factionNotFound", "faction", factionName);
+            messageUtil.sendFactionNotFoundMessage(sender.source(), factionName);
         }
     }
 
@@ -150,15 +150,15 @@ public final class FactionCommand {
 
         Faction faction = factionService.getPlayerFaction(player);
         if (faction == null) {
-            messageUtil.sendFactionMessage(sender.source(), "notInFaction");
+            messageUtil.sendNotInFactionMessage(sender.source());
             return;
         }
 
-        messageUtil.sendFactionMessage(sender.source(), "factionInfo",
-            "faction", faction.getName(),
-            "alias", faction.getAlias(),
-            "members", String.valueOf(faction.getMembers().size()),
-            "base", "No establecida");
+        messageUtil.sendFactionInfoMessage(sender.source(),
+            faction.getName(),
+            faction.getAlias(),
+            faction.getMembers().size(),
+            "No establecida");
     }
 
     @Command("list")
@@ -166,16 +166,16 @@ public final class FactionCommand {
     public void handleFactionList(Source sender) {
         var factions = factionService.getFactions();
         if (factions.isEmpty()) {
-            messageUtil.sendFactionMessage(sender.source(), "noFactionsExist");
+            messageUtil.sendNoFactionsExistMessage(sender.source());
             return;
         }
 
-        messageUtil.sendFactionMessage(sender.source(), "factionListHeader");
+        messageUtil.sendFactionListHeaderMessage(sender.source());
         for (Faction faction : factions.values()) {
-            messageUtil.sendFactionMessage(sender.source(), "factionListItem",
-                "name", faction.getName(),
-                "alias", faction.getAlias(),
-                "members", String.valueOf(faction.getMembers().size()));
+            messageUtil.sendFactionListItemMessage(sender.source(),
+                faction.getName(),
+                faction.getAlias(),
+                faction.getMembers().size());
         }
     }
 
@@ -188,12 +188,12 @@ public final class FactionCommand {
 
         Faction faction = factionService.getPlayerFaction(player);
         if (faction == null) {
-            messageUtil.sendFactionMessage(sender.source(), "notInFaction");
+            messageUtil.sendNotInFactionMessage(sender.source());
             return;
         }
 
         if (factionService.kickPlayer(player)) {
-            messageUtil.sendFactionMessage(sender.source(), "playerLeft", "player", player.getName(), "faction", faction.getName());
+            messageUtil.sendPlayerLeftFactionMessage(sender.source(), player.getName(), faction.getName());
             logger.info("Player '{}' left faction '{}'", player.getName(), faction.getName());
         }
     }

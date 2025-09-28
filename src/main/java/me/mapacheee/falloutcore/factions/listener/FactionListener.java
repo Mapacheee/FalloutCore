@@ -36,7 +36,7 @@ public class FactionListener implements Listener {
 
         if (factionService.isSameFaction(attacker, victim)) {
             event.setCancelled(true);
-            messageUtil.sendFactionMessage(attacker, "friendlyFire");
+            messageUtil.sendFactionFriendlyFireMessage(attacker);
         }
     }
 }

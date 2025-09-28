@@ -26,19 +26,13 @@ public class RadiationListener implements Listener {
         Player player = event.getPlayer();
         int radiationLevel = event.getRadiationLevel();
 
-        messageUtil.sendRadiationMessage(player, "enterRadiation",
-                "level", String.valueOf(radiationLevel));
-
-        player.getServer().getLogger().info(
-                String.format("Player %s entered radiation zone (Level %d)",
-                        player.getName(), radiationLevel));
+        messageUtil.sendRadiationEnterMessage(player, radiationLevel);
     }
-
 
     @EventHandler
     public void onRadiationExit(RadiationExitEvent event) {
         Player player = event.getPlayer();
-        messageUtil.sendRadiationMessage(player, "exitRadiation");
+        messageUtil.sendRadiationExitMessage(player);
 
     }
 }

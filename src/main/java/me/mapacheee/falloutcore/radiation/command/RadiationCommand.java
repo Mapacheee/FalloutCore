@@ -34,53 +34,52 @@ public final class RadiationCommand {
 
     @Command("info")
     public void handleRadiationInfo(Source sender) {
-        if (!(sender.source() instanceof Player)) {
+        if (!(sender.source() instanceof Player player)) {
             messageUtil.sendMessage(sender.source(), configService.getMessages().general().playersOnly());
             return;
         }
 
-        Player player = (Player) sender.source();
-        messageUtil.sendRadiationMessage(player, "systemStatus");
-        messageUtil.sendRadiationMessage(player, "currentLevel",
-            "level", String.valueOf(radiationService.getCurrentRadiationLevel()),
-            "maxLevel", String.valueOf(configService.getConfig().radiation().maxLevel()));
-        messageUtil.sendRadiationMessage(player, "radiationHeight",
-            "height", String.valueOf(radiationService.getCurrentRadiationHeight()));
-        messageUtil.sendRadiationMessage(player, "playersInRadiation",
-            "count", String.valueOf(getPlayersInRadiationCount()));
+        messageUtil.sendRadiationSystemStatusMessage(player);
+        messageUtil.sendRadiationCurrentLevelMessage(player,
+            radiationService.getCurrentRadiationLevel(),
+            configService.getConfig().radiation().maxLevel());
+        messageUtil.sendRadiationHeightMessage(player, radiationService.getCurrentRadiationHeight());
+        messageUtil.sendRadiationPlayersCountMessage(player, getPlayersInRadiationCount());
 
         String status = configService.getConfig().radiation().enabled() ?
-            configService.getMessages().radiation().systemEnabled() : configService.getMessages().radiation().systemDisabled();
-        messageUtil.sendRadiationMessage(player, "systemState", "status", status);
+            configService.getMessages().radiation().systemEnabled() :
+            configService.getMessages().radiation().systemDisabled();
+        messageUtil.sendRadiationSystemStateMessage(player, status);
     }
 
     @Command("setlevel <level>")
     @Permission("falloutcore.radiation.admin")
     public void handleSetLevel(Source sender, @Argument("level") int level) {
-        if (level < configService.getConfig().radiation().minLevel() || level > configService.getConfig().radiation().maxLevel()) {
-            if (sender.source() instanceof Player) {
-                messageUtil.sendRadiationMessage((Player) sender.source(), "levelOutOfRange",
-                    "min", String.valueOf(configService.getConfig().radiation().minLevel()),
-                    "max", String.valueOf(configService.getConfig().radiation().maxLevel()));
+        int minLevel = configService.getConfig().radiation().minLevel();
+        int maxLevel = configService.getConfig().radiation().maxLevel();
+
+        if (level < minLevel || level > maxLevel) {
+            if (sender.source() instanceof Player player) {
+                messageUtil.sendRadiationLevelOutOfRangeMessage(player, minLevel, maxLevel);
             } else {
-                messageUtil.sendMessage(sender.source(), "El nivel debe estar entre " + configService.getConfig().radiation().minLevel() + " y " + configService.getConfig().radiation().maxLevel());
+                messageUtil.sendMessage(sender.source(), "El nivel debe estar entre " + minLevel + " y " + maxLevel);
             }
             return;
         }
 
         radiationService.forceRadiationLevel(level);
-        if (sender.source() instanceof Player) {
-            messageUtil.sendRadiationMessage((Player) sender.source(), "levelSet",
-                "level", String.valueOf(level));
+
+        if (sender.source() instanceof Player player) {
+            messageUtil.sendRadiationLevelSetMessage(player, level);
         } else {
             messageUtil.sendMessage(sender.source(), "Nivel de radiación establecido a: " + level);
         }
 
+        // Notificar a jugadores en radiación del cambio de nivel
         for (Player player : Bukkit.getOnlinePlayers()) {
             if (radiationService.isPlayerInRadiation(player)) {
-                messageUtil.sendRadiationMessage(player, "levelChanged",
-                    "level", String.valueOf(level),
-                    "height", String.valueOf(radiationService.getCurrentRadiationHeight()));
+                messageUtil.sendRadiationLevelChangedMessage(player, level,
+                    radiationService.getCurrentRadiationHeight(), 0, 0);
             }
         }
 
@@ -91,8 +90,8 @@ public final class RadiationCommand {
     @Permission("falloutcore.radiation.admin")
     public void handleSetHeight(Source sender, @Argument("height") int height) {
         if (height < -64 || height > 320) {
-            if (sender.source() instanceof Player) {
-                messageUtil.sendRadiationMessage((Player) sender.source(), "heightOutOfRange");
+            if (sender.source() instanceof Player player) {
+                messageUtil.sendRadiationHeightOutOfRangeMessage(player);
             } else {
                 messageUtil.sendMessage(sender.source(), "La altura debe estar entre -64 y 320");
             }
@@ -100,9 +99,9 @@ public final class RadiationCommand {
         }
 
         radiationService.forceRadiationHeight(height);
-        if (sender.source() instanceof Player) {
-            messageUtil.sendRadiationMessage((Player) sender.source(), "heightSet",
-                "height", String.valueOf(height));
+
+        if (sender.source() instanceof Player player) {
+            messageUtil.sendRadiationHeightSetMessage(player, height);
         } else {
             messageUtil.sendMessage(sender.source(), "Altura de radiación establecida a: Y " + height);
         }
@@ -118,8 +117,8 @@ public final class RadiationCommand {
         }
 
         if (target == null) {
-            if (sender.source() instanceof Player) {
-                messageUtil.sendRadiationMessage((Player) sender.source(), "specifyPlayerConsole");
+            if (sender.source() instanceof Player player) {
+                messageUtil.sendRadiationSpecifyPlayerConsoleMessage(player);
             } else {
                 messageUtil.sendMessage(sender.source(), "Debes especificar un jugador desde la consola");
             }
@@ -130,21 +129,13 @@ public final class RadiationCommand {
         boolean isImmune = radiationService.isPlayerImmune(target);
         RadiationService.ArmorProtectionLevel armor = radiationService.getPlayerArmorProtection(target);
 
-        if (sender.source() instanceof Player) {
-            Player senderPlayer = (Player) sender.source();
-            messageUtil.sendRadiationMessage(senderPlayer, "playerStatusHeader",
-                "player", target.getName());
-            messageUtil.sendRadiationMessage(senderPlayer, "inRadiationStatus",
-                "status", inRadiation ? configService.getMessages().radiation().inRadiationYes() : configService.getMessages().radiation().inRadiationNo());
-            messageUtil.sendRadiationMessage(senderPlayer, "immuneStatus",
-                "status", isImmune ? configService.getMessages().radiation().immuneTrue() : configService.getMessages().radiation().immuneFalse());
-            messageUtil.sendRadiationMessage(senderPlayer, "armorProtectionStatus",
-                "armor", armor.displayName,
-                "level", String.valueOf(armor.level));
-            messageUtil.sendRadiationMessage(senderPlayer, "playerHeightStatus",
-                "height", String.valueOf((int) target.getLocation().getY()));
-            messageUtil.sendRadiationMessage(senderPlayer, "radiationHeightStatus",
-                "height", String.valueOf(radiationService.getCurrentRadiationHeight()));
+        if (sender.source() instanceof Player senderPlayer) {
+            messageUtil.sendRadiationPlayerStatusHeaderMessage(senderPlayer, target.getName());
+            messageUtil.sendRadiationInRadiationStatusMessage(senderPlayer, inRadiation);
+            messageUtil.sendRadiationImmuneStatusMessage(senderPlayer, isImmune);
+            messageUtil.sendRadiationArmorProtectionStatusMessage(senderPlayer, armor.displayName, armor.level);
+            messageUtil.sendRadiationPlayerHeightStatusMessage(senderPlayer, (int) target.getLocation().getY());
+            messageUtil.sendRadiationRadiationHeightStatusMessage(senderPlayer, radiationService.getCurrentRadiationHeight());
         } else {
             messageUtil.sendMessage(sender.source(), "=== Estado de Radiación: " + target.getName() + " ===");
             messageUtil.sendMessage(sender.source(), "En zona de radiación: " + (inRadiation ? "Sí" : "No"));
@@ -168,8 +159,8 @@ public final class RadiationCommand {
         }
 
         if (target == null) {
-            if (sender.source() instanceof Player) {
-                messageUtil.sendRadiationMessage((Player) sender.source(), "specifyPlayerConsole");
+            if (sender.source() instanceof Player player) {
+                messageUtil.sendRadiationSpecifyPlayerConsoleMessage(player);
             } else {
                 messageUtil.sendMessage(sender.source(), "Debes especificar un jugador desde la consola");
             }
@@ -178,16 +169,12 @@ public final class RadiationCommand {
 
         boolean isImmune = radiationService.isPlayerImmune(target);
 
-        if (sender.source() instanceof Player) {
-            Player senderPlayer = (Player) sender.source();
+        if (sender.source() instanceof Player senderPlayer) {
             if (isImmune) {
-                messageUtil.sendRadiationMessage(senderPlayer, "playerImmune",
-                    "player", target.getName());
+                messageUtil.sendRadiationPlayerImmuneMessage(senderPlayer, target.getName());
             } else {
-                messageUtil.sendRadiationMessage(senderPlayer, "playerNotImmune",
-                    "player", target.getName());
-                messageUtil.sendRadiationMessage(senderPlayer, "immunityInstructions",
-                    "player", target.getName());
+                messageUtil.sendRadiationPlayerNotImmuneMessage(senderPlayer, target.getName());
+                messageUtil.sendRadiationImmunityInstructionsMessage(senderPlayer, target.getName());
             }
         } else {
             if (isImmune) {
