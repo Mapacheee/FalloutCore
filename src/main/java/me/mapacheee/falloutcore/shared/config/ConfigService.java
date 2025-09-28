@@ -29,32 +29,41 @@ public class ConfigService {
 
     private void loadConfigurations() {
         try {
-            // Load config.yml
-            plugin.saveDefaultConfig();
+            plugin.reloadConfig();
             FileConfiguration configFile = plugin.getConfig();
+
+            File configFileObj = new File(plugin.getDataFolder(), "config.yml");
+            if (!configFileObj.exists()) {
+                plugin.saveDefaultConfig();
+            }
+
+            configFile = YamlConfiguration.loadConfiguration(configFileObj);
 
             this.config = new Config(
                 new Config.FactionConfig(
                     configFile.getBoolean("faction.enabled", true),
-                    configFile.getBoolean("faction.adminOnlyCreate", false),
-                    configFile.getBoolean("faction.enableFriendlyFire", false),
-                    configFile.getInt("faction.maxFactions", 10),
-                    configFile.getInt("faction.maxMembersPerFaction", 20),
-                    configFile.getInt("faction.maxNameLength", 16),
-                    configFile.getInt("faction.maxAliasLength", 4),
-                    configFile.getInt("faction.nexusPointsPerDestroy", 1),
-                    configFile.getBoolean("faction.enableNexusSystem", true)
+                    configFile.getBoolean("faction.admin-only-create", false),
+                    configFile.getBoolean("faction.enable-friendly-fire", false),
+                    configFile.getInt("faction.max-factions", 10),
+                    configFile.getInt("faction.max-members-per-faction", 20),
+                    configFile.getInt("faction.max-name-length", 16),
+                    configFile.getInt("faction.max-alias-length", 4),
+                    configFile.getInt("faction.nexus-points-per-destroy", 1),
+                    configFile.getBoolean("faction.enable-nexus-system", true)
                 ),
                 new Config.RadiationConfig(
                     configFile.getBoolean("radiation.enabled", true),
-                    configFile.getBoolean("radiation.enableSound", true),
-                    configFile.getInt("radiation.minLevel", 1),
-                    configFile.getInt("radiation.maxLevel", 5),
-                    configFile.getInt("radiation.startingHeight", 80),
-                    configFile.getInt("radiation.changeIntervalMinutes", 10),
-                    configFile.getDouble("radiation.damagePerLevel", 2.0),
-                    configFile.getInt("radiation.effectDurationSeconds", 30),
-                    configFile.getBoolean("radiation.enableParticles", true)
+                    configFile.getBoolean("radiation.enable-sound", true),
+                    configFile.getString("radiation.sound-type", "ENTITY_WITHER_AMBIENT"),
+                    (float) configFile.getDouble("radiation.sound-volume", 0.3),
+                    (float) configFile.getDouble("radiation.sound-pitch", 1.0),
+                    configFile.getInt("radiation.min-level", 1),
+                    configFile.getInt("radiation.max-level", 5),
+                    configFile.getInt("radiation.starting-height", 80),
+                    configFile.getInt("radiation.change-interval-minutes", 10),
+                    configFile.getDouble("radiation.damage-per-level", 2.0),
+                    configFile.getInt("radiation.effect-duration-seconds", 30),
+                    configFile.getBoolean("radiation.enable-particles", true)
                 ),
                 new Config.DatabaseConfig(
                     configFile.getString("database.type", "sqlite"),
@@ -63,9 +72,14 @@ public class ConfigService {
                     configFile.getString("database.database", "falloutcore"),
                     configFile.getString("database.username", "root"),
                     configFile.getString("database.password", ""),
-                    configFile.getString("database.tablePrefix", "fc_")
+                    configFile.getString("database.table-prefix", "fc_")
                 )
             );
+
+            logger.info("Config cargado - Sonido: {}, Volumen: {}, Tono: {}",
+                config.radiation().soundType(),
+                config.radiation().soundVolume(),
+                config.radiation().soundPitch());
 
             // Load messages.yml
             File messagesFile = new File(plugin.getDataFolder(), "messages.yml");

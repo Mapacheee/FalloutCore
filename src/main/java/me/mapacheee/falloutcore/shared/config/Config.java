@@ -28,6 +28,9 @@ public record Config(
     public record RadiationConfig(
         boolean enabled,
         boolean enableSound,
+        String soundType,
+        float soundVolume,
+        float soundPitch,
         int minLevel,
         int maxLevel,
         int startingHeight,
