@@ -1,9 +1,9 @@
 package me.mapacheee.falloutcore.shared.util;
 
 import com.google.inject.Inject;
-import com.thewinterframework.configurate.Container;
 import com.thewinterframework.service.annotation.Service;
 import me.mapacheee.falloutcore.config.Messages;
+import me.mapacheee.falloutcore.shared.config.ConfigService;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -11,15 +11,15 @@ import org.bukkit.entity.Player;
 @Service
 public class MessageUtil {
 
-    private final Container<Messages> messages;
+    private final ConfigService configService;
 
     @Inject
-    public MessageUtil(Container<Messages> messages) {
-        this.messages = messages;
+    public MessageUtil(ConfigService configService) {
+        this.configService = configService;
     }
 
     public void sendMessage(CommandSender sender, String message) {
-        String prefixed = messages.get().general().prefix() + " " + message;
+        String prefixed = configService.getMessages().general().prefix() + " " + message;
         sender.sendMessage(colorize(prefixed));
     }
 
@@ -48,7 +48,7 @@ public class MessageUtil {
     }
 
     private String getRadiationMessage(String key) {
-        Messages.RadiationMessages rad = messages.get().radiation();
+        Messages.RadiationMessages rad = configService.getMessages().radiation();
         return switch (key) {
             case "enterRadiation" -> rad.enterRadiation();
             case "exitRadiation" -> rad.exitRadiation();
@@ -56,12 +56,37 @@ public class MessageUtil {
             case "armorProtection" -> rad.armorProtection();
             case "armorDegrading" -> rad.armorDegrading();
             case "takingDamage" -> rad.takingDamage();
+            case "systemStatus" -> rad.systemStatus();
+            case "currentLevel" -> rad.currentLevel();
+            case "radiationHeight" -> rad.radiationHeight();
+            case "playersInRadiation" -> rad.playersInRadiation();
+            case "systemEnabled" -> rad.systemEnabled();
+            case "systemDisabled" -> rad.systemDisabled();
+            case "systemState" -> rad.systemState();
+            case "levelSet" -> rad.levelSet();
+            case "levelOutOfRange" -> rad.levelOutOfRange();
+            case "heightSet" -> rad.heightSet();
+            case "heightOutOfRange" -> rad.heightOutOfRange();
+            case "specifyPlayerConsole" -> rad.specifyPlayerConsole();
+            case "playerStatusHeader" -> rad.playerStatusHeader();
+            case "inRadiationStatus" -> rad.inRadiationStatus();
+            case "immuneStatus" -> rad.immuneStatus();
+            case "armorProtectionStatus" -> rad.armorProtectionStatus();
+            case "playerHeightStatus" -> rad.playerHeightStatus();
+            case "radiationHeightStatus" -> rad.radiationHeightStatus();
+            case "inRadiationYes" -> rad.inRadiationYes();
+            case "inRadiationNo" -> rad.inRadiationNo();
+            case "immuneTrue" -> rad.immuneTrue();
+            case "immuneFalse" -> rad.immuneFalse();
+            case "playerImmune" -> rad.playerImmune();
+            case "playerNotImmune" -> rad.playerNotImmune();
+            case "immunityInstructions" -> rad.immunityInstructions();
             default -> key;
         };
     }
 
     private String getFactionMessage(String key) {
-        Messages.FactionMessages fact = messages.get().faction();
+        Messages.FactionMessages fact = configService.getMessages().faction();
         return switch (key) {
             case "factionCreated" -> fact.factionCreated();
             case "factionDeleted" -> fact.factionDeleted();
@@ -76,6 +101,20 @@ public class MessageUtil {
             case "nexusDestroyed" -> fact.nexusDestroyed();
             case "pointsAwarded" -> fact.pointsAwarded();
             case "friendlyFire" -> fact.friendlyFire();
+            case "nameToolong" -> fact.nameToolong();
+            case "aliasToolong" -> fact.aliasToolong();
+            case "factionAlreadyExists" -> fact.factionAlreadyExists();
+            case "maxFactionsReached" -> fact.maxFactionsReached();
+            case "factionFull" -> fact.factionFull();
+            case "playerForceJoined" -> fact.playerForceJoined();
+            case "forceJoinedNotification" -> fact.forceJoinedNotification();
+            case "playerNotInFaction" -> fact.playerNotInFaction();
+            case "playerKicked" -> fact.playerKicked();
+            case "kickedNotification" -> fact.kickedNotification();
+            case "aliasChanged" -> fact.aliasChanged();
+            case "noFactionsExist" -> fact.noFactionsExist();
+            case "factionListHeader" -> fact.factionListHeader();
+            case "factionListItem" -> fact.factionListItem();
             default -> key;
         };
     }
@@ -85,10 +124,6 @@ public class MessageUtil {
     }
 
     public Messages getMessages() {
-        return messages.get();
-    }
-
-    public void reload() {
-        messages.reload();
+        return configService.getMessages();
     }
 }

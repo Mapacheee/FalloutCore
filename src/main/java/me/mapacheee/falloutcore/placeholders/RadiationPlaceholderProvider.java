@@ -5,60 +5,56 @@ import com.thewinterframework.service.annotation.Service;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import me.mapacheee.falloutcore.radiation.entity.RadiationService;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
 
 @Service
 public class RadiationPlaceholderProvider extends PlaceholderExpansion {
 
+    private final RadiationService radiationService;
+    private final Plugin plugin;
+
     @Inject
-    private RadiationService radiationService;
-
-    private String version;
-
-    public RadiationPlaceholderProvider() {
-        loadVersion();
-    }
-    private void loadVersion() {
-        try (InputStream input = getClass().getClassLoader().getResourceAsStream("version.properties")) {
-            Properties properties = new Properties();
-            properties.load(input);
-            this.version = properties.getProperty("version", "1.0.0");
-        } catch (IOException e) {
-            this.version = "1.0.0";
-        }
+    public RadiationPlaceholderProvider(RadiationService radiationService, Plugin plugin) {
+        this.radiationService = radiationService;
+        this.plugin = plugin;
     }
 
     @Override
     public @NotNull String getIdentifier() {
-        return "fallout";
+        return "radiation";
     }
 
     @Override
     public @NotNull String getAuthor() {
-        return "Mapacheee";
+        return plugin.getDescription().getAuthors().toString();
     }
 
     @Override
     public @NotNull String getVersion() {
-        return version;
+        return plugin.getDescription().getVersion();
+    }
+
+    @Override
+    public boolean persist() {
+        return true;
     }
 
     @Override
     public String onPlaceholderRequest(Player player, @NotNull String params) {
-        switch (params.toLowerCase()) {
-            case "radiation_level":
-                return String.valueOf(radiationService.getCurrentRadiationLevel());
-            case "radiation_height":
-                return String.valueOf(radiationService.getCurrentRadiationHeight());
-            case "players_in_radiation":
-                return String.valueOf(radiationService.getPlayersInRadiationCount());
-            default:
-                return null;
+        if (player == null) {
+            return "";
         }
+
+        return switch (params.toLowerCase()) {
+            case "level" -> String.valueOf(radiationService.getCurrentRadiationLevel());
+            case "height" -> String.valueOf(radiationService.getCurrentRadiationHeight());
+            case "in_radiation" -> radiationService.isPlayerInRadiation(player) ? "true" : "false";
+            case "is_immune" -> radiationService.isPlayerImmune(player) ? "true" : "false";
+            case "armor_protection" -> String.valueOf(radiationService.getPlayerArmorProtection(player).level);
+            case "armor_protection_name" -> radiationService.getPlayerArmorProtection(player).displayName;
+            case "players_count" -> String.valueOf(radiationService.getPlayersInRadiationCount());
+            default -> null;
+        };
     }
 }
-

@@ -1,11 +1,10 @@
 package me.mapacheee.falloutcore.shared.storage;
 
 import com.google.inject.Inject;
-import com.thewinterframework.configurate.Container;
 import com.thewinterframework.service.annotation.Service;
 import com.thewinterframework.service.annotation.lifecycle.OnEnable;
 import me.mapacheee.falloutcore.factions.entity.Faction;
-import me.mapacheee.falloutcore.shared.config.Config;
+import me.mapacheee.falloutcore.shared.config.ConfigService;
 import me.mapacheee.falloutcore.shared.util.DatabaseUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -22,55 +21,59 @@ import java.util.UUID;
 public class SQLiteStorage {
 
     private final Logger logger;
-    private final Container<Config> config;
+    private final ConfigService configService;
     private final Plugin plugin;
+    private final DatabaseUtils databaseUtils;
 
     @Inject
-    public SQLiteStorage(Logger logger, Container<Config> config, Plugin plugin) {
+    public SQLiteStorage(Logger logger, ConfigService configService, Plugin plugin, DatabaseUtils databaseUtils) {
         this.logger = logger;
-        this.config = config;
+        this.configService = configService;
         this.plugin = plugin;
+        this.databaseUtils = databaseUtils;
     }
 
     @OnEnable
     void initialize() {
-        try (Connection conn = DatabaseUtils.getConnection()) {
+        initializeTables();
+        logger.info("Database initialized successfully");
+    }
+
+    private void initializeTables() {
+        try (Connection conn = databaseUtils.getConnection()) {
             conn.createStatement().execute(
                     "CREATE TABLE IF NOT EXISTS factions (" +
                             "    id INTEGER PRIMARY KEY AUTOINCREMENT," +
                             "    name TEXT UNIQUE NOT NULL," +
-                            "    alias TEXT UNIQUE NOT NULL," +
+                            "    alias TEXT NOT NULL," +
+                            "    nexus_points INTEGER DEFAULT 0," +
+                            "    base_world TEXT," +
                             "    base_x REAL," +
                             "    base_y REAL," +
                             "    base_z REAL," +
-                            "    base_world TEXT," +
+                            "    nexus_world TEXT," +
                             "    nexus_x REAL," +
                             "    nexus_y REAL," +
-                            "    nexus_z REAL," +
-                            "    nexus_world TEXT," +
-                            "    nexus_points INTEGER DEFAULT 0" +
-                            ");"
-            );
+                            "    nexus_z REAL" +
+                            ");");
 
             conn.createStatement().execute(
                     "CREATE TABLE IF NOT EXISTS faction_players (" +
-                            "    uuid TEXT PRIMARY KEY," +
-                            "    faction_id INTEGER," +
-                            "    joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP," +
-                            "    FOREIGN KEY(faction_id) REFERENCES factions(id)" +
-                            ");"
-            );
+                            "    id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                            "    uuid TEXT NOT NULL," +
+                            "    faction_id INTEGER NOT NULL," +
+                            "    FOREIGN KEY(faction_id) REFERENCES factions(id) ON DELETE CASCADE" +
+                            ");");
 
-            logger.info("db iniciada!");
         } catch (SQLException e) {
-            logger.error("error al inicializar la base de datos", e);
+            logger.error("Failed to initialize database tables", e);
         }
     }
 
     public void saveFaction(Faction faction) {
         String sql = "INSERT OR REPLACE INTO factions (name, alias, base_x, base_y, base_z, base_world, nexus_x, nexus_y, nexus_z, nexus_world, nexus_points) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-        try (Connection conn = DatabaseUtils.getConnection();
+        try (Connection conn = databaseUtils.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, faction.getName());
@@ -113,17 +116,11 @@ public class SQLiteStorage {
     public void deleteFaction(String factionName) {
         String sql = "DELETE FROM factions WHERE name = ?";
 
-        try (Connection conn = DatabaseUtils.getConnection();
+        try (Connection conn = databaseUtils.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, factionName);
             stmt.executeUpdate();
-
-            String sqlPlayers = "DELETE FROM faction_players WHERE faction_id = (SELECT id FROM factions WHERE name = ?)";
-            try (PreparedStatement stmtPlayers = conn.prepareStatement(sqlPlayers)) {
-                stmtPlayers.setString(1, factionName);
-                stmtPlayers.executeUpdate();
-            }
 
         } catch (SQLException e) {
             logger.error("Error al eliminar facción: " + factionName, e);
@@ -134,7 +131,7 @@ public class SQLiteStorage {
         Map<String, Faction> factions = new HashMap<>();
         String sql = "SELECT * FROM factions";
 
-        try (Connection conn = DatabaseUtils.getConnection();
+        try (Connection conn = databaseUtils.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
 
@@ -182,7 +179,7 @@ public class SQLiteStorage {
     private void loadFactionMembers(Faction faction, int factionId) {
         String sql = "SELECT uuid FROM faction_players WHERE faction_id = ?";
 
-        try (Connection conn = DatabaseUtils.getConnection();
+        try (Connection conn = databaseUtils.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, factionId);
@@ -202,7 +199,7 @@ public class SQLiteStorage {
     public void savePlayerFaction(UUID playerId, String factionName) {
         String sql = "INSERT OR REPLACE INTO faction_players (uuid, faction_id) VALUES (?, (SELECT id FROM factions WHERE name = ?))";
 
-        try (Connection conn = DatabaseUtils.getConnection();
+        try (Connection conn = databaseUtils.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, playerId.toString());
@@ -217,7 +214,7 @@ public class SQLiteStorage {
     public void removePlayerFromFaction(UUID playerId) {
         String sql = "DELETE FROM faction_players WHERE uuid = ?";
 
-        try (Connection conn = DatabaseUtils.getConnection();
+        try (Connection conn = databaseUtils.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, playerId.toString());

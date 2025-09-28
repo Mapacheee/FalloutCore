@@ -3,23 +3,25 @@ package me.mapacheee.falloutcore.shared.util;
 import com.google.inject.Inject;
 import com.thewinterframework.service.annotation.Service;
 import org.bukkit.plugin.Plugin;
+import org.slf4j.Logger;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 @Service
 public class DatabaseUtils {
 
-    @Inject
-    private static Plugin plugin;
+    private final Plugin plugin;
+    private final Logger logger;
 
     @Inject
-    private Logger logger;
+    public DatabaseUtils(Plugin plugin, Logger logger) {
+        this.plugin = plugin;
+        this.logger = logger;
+    }
 
-    public static Connection getConnection() throws SQLException {
+    public Connection getConnection() throws SQLException {
         String url = "jdbc:sqlite:" + plugin.getDataFolder().getPath() + "/factions.db";
         return DriverManager.getConnection(url);
     }
@@ -44,7 +46,7 @@ public class DatabaseUtils {
 
             logger.info("Base de datos inicializada correctamente");
         } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Error al inicializar la base de datos!", e);
+            logger.error("Error al inicializar la base de datos!", e);
         }
     }
 }

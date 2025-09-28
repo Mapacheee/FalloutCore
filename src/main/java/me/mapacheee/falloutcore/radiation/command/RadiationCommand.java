@@ -2,10 +2,8 @@ package me.mapacheee.falloutcore.radiation.command;
 
 import com.google.inject.Inject;
 import com.thewinterframework.command.CommandComponent;
-import com.thewinterframework.configurate.Container;
 import me.mapacheee.falloutcore.radiation.entity.RadiationService;
-import me.mapacheee.falloutcore.shared.config.Config;
-import me.mapacheee.falloutcore.shared.config.Messages;
+import me.mapacheee.falloutcore.shared.config.ConfigService;
 import me.mapacheee.falloutcore.shared.util.MessageUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -23,52 +21,60 @@ public final class RadiationCommand {
     private final Logger logger;
     private final RadiationService radiationService;
     private final MessageUtil messageUtil;
-    private final Container<Config> config;
-    private final Container<Messages> messages;
+    private final ConfigService configService;
 
     @Inject
     public RadiationCommand(Logger logger, RadiationService radiationService, MessageUtil messageUtil,
-                           Container<Config> config, Container<Messages> messages) {
+                           ConfigService configService) {
         this.logger = logger;
         this.radiationService = radiationService;
         this.messageUtil = messageUtil;
-        this.config = config;
-        this.messages = messages;
+        this.configService = configService;
     }
 
     @Command("info")
     public void handleRadiationInfo(Source sender) {
-        Messages.Radiation rad = messages.get().radiation();
+        if (!(sender.source() instanceof Player)) {
+            messageUtil.sendMessage(sender.source(), configService.getMessages().general().playersOnly());
+            return;
+        }
 
-        messageUtil.sendMessage(sender.source(), rad.systemStatus());
-        messageUtil.sendMessage(sender.source(), rad.currentLevel()
-            .replace("{level}", String.valueOf(radiationService.getCurrentRadiationLevel()))
-            .replace("{maxLevel}", String.valueOf(config.get().radiation().maxLevel())));
-        messageUtil.sendMessage(sender.source(), rad.radiationHeight()
-            .replace("{height}", String.valueOf(radiationService.getCurrentRadiationHeight())));
-        messageUtil.sendMessage(sender.source(), rad.playersInRadiation()
-            .replace("{count}", String.valueOf(getPlayersInRadiationCount())));
+        Player player = (Player) sender.source();
+        messageUtil.sendRadiationMessage(player, "systemStatus");
+        messageUtil.sendRadiationMessage(player, "currentLevel",
+            "level", String.valueOf(radiationService.getCurrentRadiationLevel()),
+            "maxLevel", String.valueOf(configService.getConfig().radiation().maxLevel()));
+        messageUtil.sendRadiationMessage(player, "radiationHeight",
+            "height", String.valueOf(radiationService.getCurrentRadiationHeight()));
+        messageUtil.sendRadiationMessage(player, "playersInRadiation",
+            "count", String.valueOf(getPlayersInRadiationCount()));
 
-        String status = config.get().radiation().enabled() ? rad.systemEnabled() : rad.systemDisabled();
-        messageUtil.sendMessage(sender.source(), rad.systemState()
-            .replace("{status}", status));
+        String status = configService.getConfig().radiation().enabled() ?
+            configService.getMessages().radiation().systemEnabled() : configService.getMessages().radiation().systemDisabled();
+        messageUtil.sendRadiationMessage(player, "systemState", "status", status);
     }
 
     @Command("setlevel <level>")
     @Permission("falloutcore.radiation.admin")
     public void handleSetLevel(Source sender, @Argument("level") int level) {
-        Messages.Radiation rad = messages.get().radiation();
-
-        if (level < config.get().radiation().minLevel() || level > config.get().radiation().maxLevel()) {
-            messageUtil.sendMessage(sender.source(), rad.levelOutOfRange()
-                .replace("{min}", String.valueOf(config.get().radiation().minLevel()))
-                .replace("{max}", String.valueOf(config.get().radiation().maxLevel())));
+        if (level < configService.getConfig().radiation().minLevel() || level > configService.getConfig().radiation().maxLevel()) {
+            if (sender.source() instanceof Player) {
+                messageUtil.sendRadiationMessage((Player) sender.source(), "levelOutOfRange",
+                    "min", String.valueOf(configService.getConfig().radiation().minLevel()),
+                    "max", String.valueOf(configService.getConfig().radiation().maxLevel()));
+            } else {
+                messageUtil.sendMessage(sender.source(), "El nivel debe estar entre " + configService.getConfig().radiation().minLevel() + " y " + configService.getConfig().radiation().maxLevel());
+            }
             return;
         }
 
         radiationService.forceRadiationLevel(level);
-        messageUtil.sendMessage(sender.source(), rad.levelSet()
-            .replace("{level}", String.valueOf(level)));
+        if (sender.source() instanceof Player) {
+            messageUtil.sendRadiationMessage((Player) sender.source(), "levelSet",
+                "level", String.valueOf(level));
+        } else {
+            messageUtil.sendMessage(sender.source(), "Nivel de radiación establecido a: " + level);
+        }
 
         for (Player player : Bukkit.getOnlinePlayers()) {
             if (radiationService.isPlayerInRadiation(player)) {
@@ -84,31 +90,39 @@ public final class RadiationCommand {
     @Command("setheight <height>")
     @Permission("falloutcore.radiation.admin")
     public void handleSetHeight(Source sender, @Argument("height") int height) {
-        Messages.Radiation rad = messages.get().radiation();
-
         if (height < -64 || height > 320) {
-            messageUtil.sendMessage(sender.source(), rad.heightOutOfRange());
+            if (sender.source() instanceof Player) {
+                messageUtil.sendRadiationMessage((Player) sender.source(), "heightOutOfRange");
+            } else {
+                messageUtil.sendMessage(sender.source(), "La altura debe estar entre -64 y 320");
+            }
             return;
         }
 
         radiationService.forceRadiationHeight(height);
-        messageUtil.sendMessage(sender.source(), rad.heightSet()
-            .replace("{height}", String.valueOf(height)));
+        if (sender.source() instanceof Player) {
+            messageUtil.sendRadiationMessage((Player) sender.source(), "heightSet",
+                "height", String.valueOf(height));
+        } else {
+            messageUtil.sendMessage(sender.source(), "Altura de radiación establecida a: Y " + height);
+        }
 
         logger.info("Radiation height set to {} by {}", height, sender.source().getName());
     }
 
     @Command("check [player]")
     @Permission("falloutcore.radiation.admin")
-    public void handleCheckPlayer(Source sender, @Argument(value = "player", suggestions = "players") Player target) {
-        Messages.Radiation rad = messages.get().radiation();
-
+    public void handleCheckPlayer(Source sender, @Argument("player") Player target) {
         if (target == null && sender.source() instanceof Player) {
             target = (Player) sender.source();
         }
 
         if (target == null) {
-            messageUtil.sendMessage(sender.source(), rad.specifyPlayerConsole());
+            if (sender.source() instanceof Player) {
+                messageUtil.sendRadiationMessage((Player) sender.source(), "specifyPlayerConsole");
+            } else {
+                messageUtil.sendMessage(sender.source(), "Debes especificar un jugador desde la consola");
+            }
             return;
         }
 
@@ -116,28 +130,36 @@ public final class RadiationCommand {
         boolean isImmune = radiationService.isPlayerImmune(target);
         RadiationService.ArmorProtectionLevel armor = radiationService.getPlayerArmorProtection(target);
 
-        messageUtil.sendMessage(sender.source(), rad.playerStatusHeader()
-            .replace("{player}", target.getName()));
-        messageUtil.sendMessage(sender.source(), rad.inRadiationStatus()
-            .replace("{status}", inRadiation ? rad.inRadiationYes() : rad.inRadiationNo()));
-        messageUtil.sendMessage(sender.source(), rad.immuneStatus()
-            .replace("{status}", isImmune ? rad.immuneTrue() : rad.immuneFalse()));
-        messageUtil.sendMessage(sender.source(), rad.armorProtectionStatus()
-            .replace("{armor}", armor.displayName)
-            .replace("{level}", String.valueOf(armor.level)));
-        messageUtil.sendMessage(sender.source(), rad.playerHeightStatus()
-            .replace("{height}", String.valueOf((int) target.getLocation().getY())));
-        messageUtil.sendMessage(sender.source(), rad.radiationHeightStatus()
-            .replace("{height}", String.valueOf(radiationService.getCurrentRadiationHeight())));
+        if (sender.source() instanceof Player) {
+            Player senderPlayer = (Player) sender.source();
+            messageUtil.sendRadiationMessage(senderPlayer, "playerStatusHeader",
+                "player", target.getName());
+            messageUtil.sendRadiationMessage(senderPlayer, "inRadiationStatus",
+                "status", inRadiation ? configService.getMessages().radiation().inRadiationYes() : configService.getMessages().radiation().inRadiationNo());
+            messageUtil.sendRadiationMessage(senderPlayer, "immuneStatus",
+                "status", isImmune ? configService.getMessages().radiation().immuneTrue() : configService.getMessages().radiation().immuneFalse());
+            messageUtil.sendRadiationMessage(senderPlayer, "armorProtectionStatus",
+                "armor", armor.displayName,
+                "level", String.valueOf(armor.level));
+            messageUtil.sendRadiationMessage(senderPlayer, "playerHeightStatus",
+                "height", String.valueOf((int) target.getLocation().getY()));
+            messageUtil.sendRadiationMessage(senderPlayer, "radiationHeightStatus",
+                "height", String.valueOf(radiationService.getCurrentRadiationHeight()));
+        } else {
+            messageUtil.sendMessage(sender.source(), "=== Estado de Radiación: " + target.getName() + " ===");
+            messageUtil.sendMessage(sender.source(), "En zona de radiación: " + (inRadiation ? "Sí" : "No"));
+            messageUtil.sendMessage(sender.source(), "Inmune: " + (isImmune ? "Verdadero" : "Falso"));
+            messageUtil.sendMessage(sender.source(), "Protección de armadura: " + armor.displayName + " (Nivel " + armor.level + ")");
+            messageUtil.sendMessage(sender.source(), "Altura actual: Y " + (int) target.getLocation().getY());
+            messageUtil.sendMessage(sender.source(), "Altura de radiación: Y " + radiationService.getCurrentRadiationHeight());
+        }
     }
 
     @Command("immunity [player]")
-    public void handleImmunityInfo(Source sender, @Argument(value = "player", suggestions = "players") Player target) {
-        Messages.Radiation rad = messages.get().radiation();
-
+    public void handleImmunityInfo(Source sender, @Argument("player") Player target) {
         if (target != null && !target.equals(sender.source()) &&
             !sender.source().hasPermission("falloutcore.radiation.admin")) {
-            messageUtil.sendMessage(sender.source(), messages.get().general().noPermission());
+            messageUtil.sendMessage(sender.source(), configService.getMessages().general().noPermission());
             return;
         }
 
@@ -146,20 +168,34 @@ public final class RadiationCommand {
         }
 
         if (target == null) {
-            messageUtil.sendMessage(sender.source(), rad.specifyPlayerConsole());
+            if (sender.source() instanceof Player) {
+                messageUtil.sendRadiationMessage((Player) sender.source(), "specifyPlayerConsole");
+            } else {
+                messageUtil.sendMessage(sender.source(), "Debes especificar un jugador desde la consola");
+            }
             return;
         }
 
         boolean isImmune = radiationService.isPlayerImmune(target);
 
-        if (isImmune) {
-            messageUtil.sendMessage(sender.source(), rad.playerImmune()
-                .replace("{player}", target.getName()));
+        if (sender.source() instanceof Player) {
+            Player senderPlayer = (Player) sender.source();
+            if (isImmune) {
+                messageUtil.sendRadiationMessage(senderPlayer, "playerImmune",
+                    "player", target.getName());
+            } else {
+                messageUtil.sendRadiationMessage(senderPlayer, "playerNotImmune",
+                    "player", target.getName());
+                messageUtil.sendRadiationMessage(senderPlayer, "immunityInstructions",
+                    "player", target.getName());
+            }
         } else {
-            messageUtil.sendMessage(sender.source(), rad.playerNotImmune()
-                .replace("{player}", target.getName()));
-            messageUtil.sendMessage(sender.source(), rad.immunityInstructions()
-                .replace("{player}", target.getName()));
+            if (isImmune) {
+                messageUtil.sendMessage(sender.source(), "El jugador " + target.getName() + " es inmune a la radiación");
+            } else {
+                messageUtil.sendMessage(sender.source(), "El jugador " + target.getName() + " NO es inmune a la radiación");
+                messageUtil.sendMessage(sender.source(), "Para otorgar inmunidad usa: /lp user " + target.getName() + " permission set falloutcore.radiation.immune true");
+            }
         }
     }
 

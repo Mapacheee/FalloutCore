@@ -1,5 +1,6 @@
 package me.mapacheee.falloutcore.radiation.listener;
 
+import com.google.inject.Inject;
 import com.thewinterframework.paper.listener.ListenerComponent;
 import me.mapacheee.falloutcore.radiation.event.RadiationEnterEvent;
 import me.mapacheee.falloutcore.radiation.event.RadiationExitEvent;
@@ -14,6 +15,7 @@ public class RadiationListener implements Listener {
 
     private final MessageUtil messageUtil;
 
+    @Inject
     public RadiationListener(MessageUtil messageUtil) {
         this.messageUtil = messageUtil;
     }
@@ -24,7 +26,7 @@ public class RadiationListener implements Listener {
         Player player = event.getPlayer();
         int radiationLevel = event.getRadiationLevel();
 
-        messageUtil.sendRadiationMessage(player, "radiationWarning",
+        messageUtil.sendRadiationMessage(player, "enterRadiation",
                 "level", String.valueOf(radiationLevel));
 
         player.getServer().getLogger().info(
@@ -36,7 +38,7 @@ public class RadiationListener implements Listener {
     @EventHandler
     public void onRadiationExit(RadiationExitEvent event) {
         Player player = event.getPlayer();
-        messageUtil.sendRadiationMessage(player, "radiationSafe");
+        messageUtil.sendRadiationMessage(player, "exitRadiation");
 
     }
 }

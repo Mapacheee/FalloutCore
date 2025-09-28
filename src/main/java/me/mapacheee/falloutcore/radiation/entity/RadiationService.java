@@ -1,11 +1,11 @@
 package me.mapacheee.falloutcore.radiation.entity;
 
 import com.google.inject.Inject;
-import com.thewinterframework.configurate.Container;
 import com.thewinterframework.service.annotation.Service;
 import com.thewinterframework.service.annotation.lifecycle.OnDisable;
 import com.thewinterframework.service.annotation.lifecycle.OnEnable;
 import me.mapacheee.falloutcore.shared.config.Config;
+import me.mapacheee.falloutcore.shared.config.ConfigService;
 import me.mapacheee.falloutcore.shared.util.MessageUtil;
 import me.mapacheee.falloutcore.radiation.event.RadiationLevelChangeEvent;
 import me.mapacheee.falloutcore.radiation.event.RadiationEnterEvent;
@@ -29,7 +29,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class RadiationService {
 
     private final Logger logger;
-    private final Container<Config> config;
+    private final ConfigService configService;
     private final MessageUtil messageUtil;
     private final Plugin plugin;
 
@@ -42,16 +42,16 @@ public class RadiationService {
     private BukkitTask levelChangeTask;
 
     @Inject
-    public RadiationService(Logger logger, Container<Config> config, MessageUtil messageUtil, Plugin plugin) {
+    public RadiationService(Logger logger, ConfigService configService, MessageUtil messageUtil, Plugin plugin) {
         this.logger = logger;
-        this.config = config;
+        this.configService = configService;
         this.messageUtil = messageUtil;
         this.plugin = plugin;
     }
 
     @OnEnable
     void startRadiationSystem() {
-        if (!config.get().radiation().enabled()) {
+        if (!configService.getConfig().radiation().enabled()) {
             logger.info("radiacion apagada");
             return;
         }
@@ -90,7 +90,7 @@ public class RadiationService {
     }
 
     private void startLevelChangeTask() {
-        long intervalTicks = config.get().radiation().changeIntervalMinutes() * 60L * 20L;
+        long intervalTicks = configService.getConfig().radiation().changeIntervalMinutes() * 60L * 20L;
 
         levelChangeTask = new BukkitRunnable() {
             @Override
@@ -130,7 +130,7 @@ public class RadiationService {
     }
 
     private void handleRadiationEffects(Player player) {
-        if (config.get().radiation().enableSound()) {
+        if (configService.getConfig().radiation().enableSound()) {
             player.playSound(player.getLocation(), Sound.ENTITY_WITHER_AMBIENT, 0.3f, 1.0f);
         }
 
@@ -146,7 +146,7 @@ public class RadiationService {
         long lastDamage = lastDamageTime.getOrDefault(player.getUniqueId(), 0L);
 
         if (currentTime - lastDamage > 3000) { // Daño cada 3 segundos
-            double damage = config.get().radiation().damagePerLevel() * currentRadiationLevel;
+            double damage = configService.getConfig().radiation().damagePerLevel() * currentRadiationLevel;
             player.damage(damage);
             applyRadiationEffects(player);
 
@@ -224,7 +224,7 @@ public class RadiationService {
     }
 
     private void applyRadiationEffects(Player player) {
-        int duration = config.get().radiation().effectDurationSeconds() * 20;
+        int duration = configService.getConfig().radiation().effectDurationSeconds() * 20;
 
         switch (currentRadiationLevel) {
             case 1 -> player.addPotionEffect(new PotionEffect(PotionEffectType.HUNGER, duration, 0));
@@ -257,7 +257,7 @@ public class RadiationService {
         int oldLevel = currentRadiationLevel;
         int oldHeight = currentRadiationHeight;
 
-        Config.RadiationConfig radConfig = config.get().radiation();
+        Config.RadiationConfig radConfig = configService.getConfig().radiation();
 
         currentRadiationLevel = ThreadLocalRandom.current().nextInt(
             radConfig.minLevel(), radConfig.maxLevel() + 1
@@ -313,7 +313,7 @@ public class RadiationService {
     }
 
     public void forceRadiationLevel(int level) {
-        if (level >= config.get().radiation().minLevel() && level <= config.get().radiation().maxLevel()) {
+        if (level >= configService.getConfig().radiation().minLevel() && level <= configService.getConfig().radiation().maxLevel()) {
             currentRadiationLevel = level;
             logger.info("Nivel de radiación forzado a: {}", level);
         }
