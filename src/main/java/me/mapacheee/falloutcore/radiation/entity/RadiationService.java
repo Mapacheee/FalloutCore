@@ -39,6 +39,8 @@ public class RadiationService {
     private int currentRadiationHeight = 80;
     private final Map<UUID, Boolean> playersInRadiation = new HashMap<>();
     private final Map<UUID, Long> lastDamageTime = new HashMap<>();
+    private final Map<UUID, ArmorProtectionLevel> lastArmorLevel = new HashMap<>();
+    private final Map<UUID, Boolean> armorProtectionShown = new HashMap<>();
 
     private BukkitTask radiationTask;
     private BukkitTask levelChangeTask;
@@ -133,6 +135,10 @@ public class RadiationService {
                 String soundTypeName = configService.getConfig().radiation().soundType();
                 Sound sound = Registry.SOUNDS.get(NamespacedKey.minecraft(soundTypeName.toLowerCase().replace("_", ".")));
 
+                if (sound == null) {
+                    sound = Sound.valueOf(soundTypeName.toUpperCase());
+                }
+
                 float volume = configService.getConfig().radiation().soundVolume();
                 float pitch = configService.getConfig().radiation().soundPitch();
 
@@ -143,16 +149,31 @@ public class RadiationService {
             }
         }
 
-        ArmorProtectionLevel protection = getArmorProtection(player);
+        ArmorProtectionLevel currentProtection = getArmorProtection(player);
+        ArmorProtectionLevel previousProtection = lastArmorLevel.getOrDefault(player.getUniqueId(), ArmorProtectionLevel.NONE);
+        UUID playerId = player.getUniqueId();
 
-        if (protection.level >= currentRadiationLevel) {
-            messageUtil.sendRadiationMessage(player, "armorProtection");
+        boolean isProtected = currentProtection.level >= currentRadiationLevel;
+        boolean wasProtected = previousProtection.level >= currentRadiationLevel;
+
+        if (isProtected && (!wasProtected || !armorProtectionShown.getOrDefault(playerId, false))) {
+            messageUtil.sendRadiationTitle(player, "radiationArmorTitle", "radiationArmorSubtitle",
+                "level", String.valueOf(currentRadiationLevel),
+                "armor", currentProtection.displayName);
+            armorProtectionShown.put(playerId, true);
+        }
+
+        lastArmorLevel.put(playerId, currentProtection);
+
+        if (isProtected) {
             degradeArmor(player);
             return;
+        } else {
+            armorProtectionShown.put(playerId, false);
         }
 
         long currentTime = System.currentTimeMillis();
-        long lastDamage = lastDamageTime.getOrDefault(player.getUniqueId(), 0L);
+        long lastDamage = lastDamageTime.getOrDefault(playerId, 0L);
 
         if (currentTime - lastDamage > 3000) {
             double damage = configService.getConfig().radiation().damagePerLevel() * currentRadiationLevel;
@@ -162,7 +183,7 @@ public class RadiationService {
             messageUtil.sendRadiationTitle(player, "radiationDamageTitle", "radiationDamageSubtitle",
                 "damage", String.valueOf(damage),
                 "level", String.valueOf(currentRadiationLevel));
-            lastDamageTime.put(player.getUniqueId(), currentTime);
+            lastDamageTime.put(playerId, currentTime);
         }
     }
 

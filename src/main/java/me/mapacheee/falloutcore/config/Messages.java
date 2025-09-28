@@ -21,6 +21,8 @@ public record Messages(
         String takingDamage,
         String radiationDamageTitle,
         String radiationDamageSubtitle,
+        String radiationArmorTitle,
+        String radiationArmorSubtitle,
         String systemStatus,
         String currentLevel,
         String radiationHeight,

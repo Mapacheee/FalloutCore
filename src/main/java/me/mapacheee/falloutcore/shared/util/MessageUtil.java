@@ -53,7 +53,7 @@ public class MessageUtil {
     private String getRadiationMessage(String key) {
         Messages.RadiationMessages rad = configService.getMessages().radiation();
 
-        Map<String, Function<Messages.RadiationMessages, String>> radiationMessages = Map.<String, Function<Messages.RadiationMessages, String>>of(
+        Map<String, Function<Messages.RadiationMessages, String>> radiationMessages1 = Map.<String, Function<Messages.RadiationMessages, String>>of(
             "enterRadiation", Messages.RadiationMessages::enterRadiation,
             "exitRadiation", Messages.RadiationMessages::exitRadiation,
             "levelChanged", Messages.RadiationMessages::levelChanged,
@@ -62,11 +62,20 @@ public class MessageUtil {
             "takingDamage", Messages.RadiationMessages::takingDamage,
             "radiationDamageTitle", Messages.RadiationMessages::radiationDamageTitle,
             "radiationDamageSubtitle", Messages.RadiationMessages::radiationDamageSubtitle,
+            "radiationArmorTitle", Messages.RadiationMessages::radiationArmorTitle,
+            "radiationArmorSubtitle", Messages.RadiationMessages::radiationArmorSubtitle
+        );
+
+        Map<String, Function<Messages.RadiationMessages, String>> radiationMessages2 = Map.<String, Function<Messages.RadiationMessages, String>>of(
             "systemStatus", Messages.RadiationMessages::systemStatus,
             "currentLevel", Messages.RadiationMessages::currentLevel
         );
 
-        Function<Messages.RadiationMessages, String> messageFunction = radiationMessages.get(key);
+        Function<Messages.RadiationMessages, String> messageFunction = radiationMessages1.get(key);
+        if (messageFunction == null) {
+            messageFunction = radiationMessages2.get(key);
+        }
+
         return messageFunction != null ? messageFunction.apply(rad) : key;
     }
 

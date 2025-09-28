@@ -104,6 +104,8 @@ public class ConfigService {
                     messagesConfig.getString("radiation.takingDamage", "&4La radiación te está causando daño!"),
                     messagesConfig.getString("radiation.radiationDamageTitle", "&4⚠ RADIACIÓN ⚠"),
                     messagesConfig.getString("radiation.radiationDamageSubtitle", "&c¡Recibiendo daño por radiación! &7(Nivel <level>)"),
+                    messagesConfig.getString("radiation.radiationArmorTitle", "&9⚠ PROTEGIDO ⚠"),
+                    messagesConfig.getString("radiation.radiationArmorSubtitle", "&bTu armadura <armor> te protege &7(Nivel <level>)"),
                     messagesConfig.getString("radiation.systemStatus", "&6=== Estado del Sistema de Radiación ==="),
                     messagesConfig.getString("radiation.currentLevel", "&eNivel actual: &f<level>&7/&f<maxLevel>"),
                     messagesConfig.getString("radiation.radiationHeight", "&eAltura de radiación: &fY <height>"),
