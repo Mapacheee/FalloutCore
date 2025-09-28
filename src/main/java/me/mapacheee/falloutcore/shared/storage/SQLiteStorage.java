@@ -44,6 +44,15 @@ public class SQLiteStorage {
         }
     }
 
+    public void ensureTablesExist() {
+        try {
+            initializeTables();
+        } catch (Exception e) {
+            logger.error("Error ensuring tables exist", e);
+            throw new RuntimeException("Failed to ensure tables exist", e);
+        }
+    }
+
     private void initializeTables() {
         try (Connection conn = databaseUtils.getConnection()) {
             logger.info("Creating factions table...");

@@ -34,6 +34,7 @@ public class FactionService {
 
     @OnEnable
     void initialize() {
+        storage.ensureTablesExist();
         loadFactions();
         logger.info("factions iniciado con {} faccciones", factions.size());
     }
