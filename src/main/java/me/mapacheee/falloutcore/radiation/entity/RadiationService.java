@@ -110,9 +110,6 @@ public class RadiationService {
 
             if (!enterEvent.isCancelled()) {
                 playersInRadiation.put(player.getUniqueId(), true);
-                messageUtil.sendRadiationMessage(player, "enterRadiation",
-                        "level", String.valueOf(currentRadiationLevel),
-                        "height", String.valueOf(currentRadiationHeight));
             }
         } else if (!inRadiation && wasInRadiation) {
             RadiationExitEvent exitEvent = new RadiationExitEvent(player, currentRadiationLevel);
@@ -120,7 +117,6 @@ public class RadiationService {
 
             if (!exitEvent.isCancelled()) {
                 playersInRadiation.put(player.getUniqueId(), false);
-                messageUtil.sendRadiationMessage(player, "exitRadiation");
             }
         }
 
@@ -131,7 +127,17 @@ public class RadiationService {
 
     private void handleRadiationEffects(Player player) {
         if (configService.getConfig().radiation().enableSound()) {
-            player.playSound(player.getLocation(), Sound.ENTITY_WITHER_AMBIENT, 0.3f, 1.0f);
+            try {
+                String soundTypeName = configService.getConfig().radiation().soundType();
+                Sound sound = Sound.valueOf(soundTypeName);
+                float volume = configService.getConfig().radiation().soundVolume();
+                float pitch = configService.getConfig().radiation().soundPitch();
+
+                player.playSound(player.getLocation(), sound, volume, pitch);
+            } catch (IllegalArgumentException e) {
+                logger.warn("Tipo de sonido inválido en config: {}. Usando sonido por defecto.", configService.getConfig().radiation().soundType());
+                player.playSound(player.getLocation(), Sound.ENTITY_WITHER_AMBIENT, 0.3f, 1.0f);
+            }
         }
 
         ArmorProtectionLevel protection = getArmorProtection(player);
@@ -145,7 +151,7 @@ public class RadiationService {
         long currentTime = System.currentTimeMillis();
         long lastDamage = lastDamageTime.getOrDefault(player.getUniqueId(), 0L);
 
-        if (currentTime - lastDamage > 3000) { // Daño cada 3 segundos
+        if (currentTime - lastDamage > 3000) {
             double damage = configService.getConfig().radiation().damagePerLevel() * currentRadiationLevel;
             player.damage(damage);
             applyRadiationEffects(player);
