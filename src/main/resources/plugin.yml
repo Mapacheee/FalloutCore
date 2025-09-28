@@ -3,8 +3,7 @@ version: '1.0-SNAPSHOT'
 main: me.mapacheee.falloutcore.FalloutWinterPlugin
 api-version: '1.21'
 
-depend: [PacketEvents]
-softdepend: [PlaceholderAPI]
+softdepend: [PlaceholderAPI, PacketEvents]
 
 commands:
   faction:
