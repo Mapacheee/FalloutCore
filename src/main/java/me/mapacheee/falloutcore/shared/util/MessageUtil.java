@@ -429,7 +429,10 @@ public class MessageUtil {
     }
 
     private String colorize(String message) {
-        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacyAmpersand()
+        if (message == null) return "";
+
+        message = message.replaceAll("&#([A-Fa-f0-9]{6})", "<#$1>");
+        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection()
                 .serialize(
                     net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacyAmpersand()
                             .deserialize(message)
