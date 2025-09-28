@@ -25,28 +25,4 @@ public class DatabaseUtils {
         String url = "jdbc:sqlite:" + plugin.getDataFolder().getPath() + "/factions.db";
         return DriverManager.getConnection(url);
     }
-
-    public void initializeDatabase() {
-        try (Connection conn = getConnection()) {
-            conn.createStatement().execute(
-                    "CREATE TABLE IF NOT EXISTS factions (" +
-                            "    id INTEGER PRIMARY KEY AUTOINCREMENT," +
-                            "    name TEXT UNIQUE NOT NULL," +
-                            "    alias TEXT UNIQUE NOT NULL" +
-                            ");"
-            );
-
-            conn.createStatement().execute(
-                    "CREATE TABLE IF NOT EXISTS faction_players (" +
-                            "    uuid TEXT PRIMARY KEY," +
-                            "    faction_id INTEGER," +
-                            "    FOREIGN KEY(faction_id) REFERENCES factions(id)" +
-                            ");"
-            );
-
-            logger.info("Base de datos inicializada correctamente");
-        } catch (SQLException e) {
-            logger.error("Error al inicializar la base de datos!", e);
-        }
-    }
 }

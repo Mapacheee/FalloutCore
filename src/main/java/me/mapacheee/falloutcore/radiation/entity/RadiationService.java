@@ -12,6 +12,8 @@ import me.mapacheee.falloutcore.radiation.event.RadiationEnterEvent;
 import me.mapacheee.falloutcore.radiation.event.RadiationExitEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -129,7 +131,8 @@ public class RadiationService {
         if (configService.getConfig().radiation().enableSound()) {
             try {
                 String soundTypeName = configService.getConfig().radiation().soundType();
-                Sound sound = Sound.valueOf(soundTypeName);
+                Sound sound = Registry.SOUNDS.get(NamespacedKey.minecraft(soundTypeName.toLowerCase().replace("_", ".")));
+
                 float volume = configService.getConfig().radiation().soundVolume();
                 float pitch = configService.getConfig().radiation().soundPitch();
 
@@ -156,7 +159,7 @@ public class RadiationService {
             player.damage(damage);
             applyRadiationEffects(player);
 
-            messageUtil.sendRadiationMessage(player, "takingDamage",
+            messageUtil.sendRadiationTitle(player, "radiationDamageTitle", "radiationDamageSubtitle",
                 "damage", String.valueOf(damage),
                 "level", String.valueOf(currentRadiationLevel));
             lastDamageTime.put(player.getUniqueId(), currentTime);
@@ -205,11 +208,15 @@ public class RadiationService {
             player.getInventory().getBoots()
         };
 
+        // Usar valores configurables para el daño de armadura
+        int minDamage = configService.getConfig().radiation().armorDamageMin();
+        int maxDamage = configService.getConfig().radiation().armorDamageMax();
+
         for (int i = 0; i < armor.length; i++) {
             ItemStack piece = armor[i];
             if (piece != null && piece.getType().getMaxDurability() > 0) {
                 short currentDamage = piece.getDurability();
-                short newDamage = (short) (currentDamage + ThreadLocalRandom.current().nextInt(1, 4));
+                short newDamage = (short) (currentDamage + ThreadLocalRandom.current().nextInt(minDamage, maxDamage + 1));
 
                 if (newDamage >= piece.getType().getMaxDurability()) {
                     piece.setType(Material.AIR);
@@ -226,7 +233,7 @@ public class RadiationService {
             }
         }
 
-        messageUtil.sendRadiationMessage(player, "armorDegrading");
+        // Eliminar el mensaje de daño a armadura - ya no se envía ningún mensaje
     }
 
     private void applyRadiationEffects(Player player) {

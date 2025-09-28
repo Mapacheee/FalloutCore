@@ -67,8 +67,9 @@ public record Messages(
         String armorProtection,
         String armorDegrading,
         String takingDamage,
+        String radiationDamageTitle,
+        String radiationDamageSubtitle,
         String immuneMessage,
-
         String unknownSubcommand,
         String systemStatus,
         String currentLevel,

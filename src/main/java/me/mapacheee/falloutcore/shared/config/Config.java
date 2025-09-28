@@ -37,7 +37,9 @@ public record Config(
         int changeIntervalMinutes,
         double damagePerLevel,
         int effectDurationSeconds,
-        boolean enableParticles
+        boolean enableParticles,
+        int armorDamageMin,
+        int armorDamageMax
     ) {}
 
     @ConfigSerializable

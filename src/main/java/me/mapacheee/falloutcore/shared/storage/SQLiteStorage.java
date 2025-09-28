@@ -35,12 +35,18 @@ public class SQLiteStorage {
 
     @OnEnable
     void initialize() {
-        initializeTables();
-        logger.info("Database initialized successfully");
+        try {
+            initializeTables();
+            logger.info("Database initialized successfully");
+        } catch (Exception e) {
+            logger.error("Critical error initializing database", e);
+            throw new RuntimeException("Failed to initialize database", e);
+        }
     }
 
     private void initializeTables() {
         try (Connection conn = databaseUtils.getConnection()) {
+            logger.info("Creating factions table...");
             conn.createStatement().execute(
                     "CREATE TABLE IF NOT EXISTS factions (" +
                             "    id INTEGER PRIMARY KEY AUTOINCREMENT," +
@@ -57,6 +63,7 @@ public class SQLiteStorage {
                             "    nexus_z REAL" +
                             ");");
 
+            logger.info("Creating faction_players table...");
             conn.createStatement().execute(
                     "CREATE TABLE IF NOT EXISTS faction_players (" +
                             "    id INTEGER PRIMARY KEY AUTOINCREMENT," +
@@ -65,8 +72,10 @@ public class SQLiteStorage {
                             "    FOREIGN KEY(faction_id) REFERENCES factions(id) ON DELETE CASCADE" +
                             ");");
 
+            logger.info("Database tables created successfully");
         } catch (SQLException e) {
             logger.error("Failed to initialize database tables", e);
+            throw new RuntimeException("Database initialization failed", e);
         }
     }
 

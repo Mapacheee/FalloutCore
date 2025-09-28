@@ -63,7 +63,9 @@ public class ConfigService {
                     configFile.getInt("radiation.change-interval-minutes", 10),
                     configFile.getDouble("radiation.damage-per-level", 2.0),
                     configFile.getInt("radiation.effect-duration-seconds", 30),
-                    configFile.getBoolean("radiation.enable-particles", true)
+                    configFile.getBoolean("radiation.enable-particles", true),
+                    configFile.getInt("radiation.armor-damage-min", 1),
+                    configFile.getInt("radiation.armor-damage-max", 3)
                 ),
                 new Config.DatabaseConfig(
                     configFile.getString("database.type", "sqlite"),
@@ -81,7 +83,6 @@ public class ConfigService {
                 config.radiation().soundVolume(),
                 config.radiation().soundPitch());
 
-            // Load messages.yml
             File messagesFile = new File(plugin.getDataFolder(), "messages.yml");
             if (!messagesFile.exists()) {
                 plugin.saveResource("messages.yml", false);
@@ -101,6 +102,8 @@ public class ConfigService {
                     messagesConfig.getString("radiation.armorProtection", "&9Tu armadura te está protegiendo de la radiación."),
                     messagesConfig.getString("radiation.armorDegrading", "&6Tu armadura se está desgastando por la radiación."),
                     messagesConfig.getString("radiation.takingDamage", "&4La radiación te está causando daño!"),
+                    messagesConfig.getString("radiation.radiationDamageTitle", "&4⚠ RADIACIÓN ⚠"),
+                    messagesConfig.getString("radiation.radiationDamageSubtitle", "&c¡Recibiendo daño por radiación! &7(Nivel <level>)"),
                     messagesConfig.getString("radiation.systemStatus", "&6=== Estado del Sistema de Radiación ==="),
                     messagesConfig.getString("radiation.currentLevel", "&eNivel actual: &f<level>&7/&f<maxLevel>"),
                     messagesConfig.getString("radiation.radiationHeight", "&eAltura de radiación: &fY <height>"),

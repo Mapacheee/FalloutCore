@@ -8,6 +8,9 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.Map;
+import java.util.function.Function;
+
 @Service
 public class MessageUtil {
 
@@ -49,78 +52,74 @@ public class MessageUtil {
 
     private String getRadiationMessage(String key) {
         Messages.RadiationMessages rad = configService.getMessages().radiation();
-        return switch (key) {
-            case "enterRadiation" -> rad.enterRadiation();
-            case "exitRadiation" -> rad.exitRadiation();
-            case "levelChanged" -> rad.levelChanged();
-            case "armorProtection" -> rad.armorProtection();
-            case "armorDegrading" -> rad.armorDegrading();
-            case "takingDamage" -> rad.takingDamage();
-            case "systemStatus" -> rad.systemStatus();
-            case "currentLevel" -> rad.currentLevel();
-            case "radiationHeight" -> rad.radiationHeight();
-            case "playersInRadiation" -> rad.playersInRadiation();
-            case "systemEnabled" -> rad.systemEnabled();
-            case "systemDisabled" -> rad.systemDisabled();
-            case "systemState" -> rad.systemState();
-            case "levelSet" -> rad.levelSet();
-            case "levelOutOfRange" -> rad.levelOutOfRange();
-            case "heightSet" -> rad.heightSet();
-            case "heightOutOfRange" -> rad.heightOutOfRange();
-            case "specifyPlayerConsole" -> rad.specifyPlayerConsole();
-            case "playerStatusHeader" -> rad.playerStatusHeader();
-            case "inRadiationStatus" -> rad.inRadiationStatus();
-            case "immuneStatus" -> rad.immuneStatus();
-            case "armorProtectionStatus" -> rad.armorProtectionStatus();
-            case "playerHeightStatus" -> rad.playerHeightStatus();
-            case "radiationHeightStatus" -> rad.radiationHeightStatus();
-            case "inRadiationYes" -> rad.inRadiationYes();
-            case "inRadiationNo" -> rad.inRadiationNo();
-            case "immuneTrue" -> rad.immuneTrue();
-            case "immuneFalse" -> rad.immuneFalse();
-            case "playerImmune" -> rad.playerImmune();
-            case "playerNotImmune" -> rad.playerNotImmune();
-            case "immunityInstructions" -> rad.immunityInstructions();
-            default -> key;
-        };
+
+        Map<String, Function<Messages.RadiationMessages, String>> radiationMessages = Map.<String, Function<Messages.RadiationMessages, String>>of(
+            "enterRadiation", Messages.RadiationMessages::enterRadiation,
+            "exitRadiation", Messages.RadiationMessages::exitRadiation,
+            "levelChanged", Messages.RadiationMessages::levelChanged,
+            "armorProtection", Messages.RadiationMessages::armorProtection,
+            "armorDegrading", Messages.RadiationMessages::armorDegrading,
+            "takingDamage", Messages.RadiationMessages::takingDamage,
+            "radiationDamageTitle", Messages.RadiationMessages::radiationDamageTitle,
+            "radiationDamageSubtitle", Messages.RadiationMessages::radiationDamageSubtitle,
+            "systemStatus", Messages.RadiationMessages::systemStatus,
+            "currentLevel", Messages.RadiationMessages::currentLevel
+        );
+
+        Function<Messages.RadiationMessages, String> messageFunction = radiationMessages.get(key);
+        return messageFunction != null ? messageFunction.apply(rad) : key;
     }
 
     private String getFactionMessage(String key) {
         Messages.FactionMessages fact = configService.getMessages().faction();
-        return switch (key) {
-            case "factionCreated" -> fact.factionCreated();
-            case "factionDeleted" -> fact.factionDeleted();
-            case "playerJoined" -> fact.playerJoined();
-            case "playerLeft" -> fact.playerLeft();
-            case "factionNotFound" -> fact.factionNotFound();
-            case "alreadyInFaction" -> fact.alreadyInFaction();
-            case "notInFaction" -> fact.notInFaction();
-            case "noPermission" -> fact.noPermission();
-            case "factionInfo" -> fact.factionInfo();
-            case "factionList" -> fact.factionList();
-            case "nexusDestroyed" -> fact.nexusDestroyed();
-            case "pointsAwarded" -> fact.pointsAwarded();
-            case "friendlyFire" -> fact.friendlyFire();
-            case "nameToolong" -> fact.nameToolong();
-            case "aliasToolong" -> fact.aliasToolong();
-            case "factionAlreadyExists" -> fact.factionAlreadyExists();
-            case "maxFactionsReached" -> fact.maxFactionsReached();
-            case "factionFull" -> fact.factionFull();
-            case "playerForceJoined" -> fact.playerForceJoined();
-            case "forceJoinedNotification" -> fact.forceJoinedNotification();
-            case "playerNotInFaction" -> fact.playerNotInFaction();
-            case "playerKicked" -> fact.playerKicked();
-            case "kickedNotification" -> fact.kickedNotification();
-            case "aliasChanged" -> fact.aliasChanged();
-            case "noFactionsExist" -> fact.noFactionsExist();
-            case "factionListHeader" -> fact.factionListHeader();
-            case "factionListItem" -> fact.factionListItem();
-            default -> key;
-        };
+
+        Map<String, Function<Messages.FactionMessages, String>> factionMessages = Map.<String, Function<Messages.FactionMessages, String>>of(
+            "factionCreated", Messages.FactionMessages::factionCreated,
+            "factionDeleted", Messages.FactionMessages::factionDeleted,
+            "factionNotFound", Messages.FactionMessages::factionNotFound,
+            "alreadyInFaction", Messages.FactionMessages::alreadyInFaction,
+            "notInFaction", Messages.FactionMessages::notInFaction,
+            "noPermission", Messages.FactionMessages::noPermission,
+            "factionInfo", Messages.FactionMessages::factionInfo,
+            "nameToolong", Messages.FactionMessages::nameToolong,
+            "aliasToolong", Messages.FactionMessages::aliasToolong,
+            "factionAlreadyExists", Messages.FactionMessages::factionAlreadyExists
+        );
+
+        Function<Messages.FactionMessages, String> messageFunction = factionMessages.get(key);
+        return messageFunction != null ? messageFunction.apply(fact) : key;
     }
 
     public String colorize(String message) {
+        if (message.contains("#")) {
+            java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("#[a-fA-F0-9]{6}");
+            java.util.regex.Matcher matcher = pattern.matcher(message);
+            while (matcher.find()) {
+                String hexColor = matcher.group();
+                try {
+                    message = message.replace(hexColor, net.md_5.bungee.api.ChatColor.of(hexColor).toString());
+                } catch (Exception e) {}
+            }
+        }
         return ChatColor.translateAlternateColorCodes('&', message);
+    }
+
+    public void sendTitle(Player player, String title, String subtitle) {
+        player.sendTitle(colorize(title), colorize(subtitle), 10, 20, 10);
+    }
+
+    public void sendRadiationTitle(Player player, String titleKey, String subtitleKey, String... replacements) {
+        String title = getRadiationMessage(titleKey);
+        String subtitle = getRadiationMessage(subtitleKey);
+
+        if (replacements.length >= 2) {
+            for (int i = 0; i < replacements.length; i += 2) {
+                title = title.replace("<" + replacements[i] + ">", replacements[i + 1]);
+                subtitle = subtitle.replace("<" + replacements[i] + ">", replacements[i + 1]);
+            }
+        }
+
+        sendTitle(player, title, subtitle);
     }
 
     public Messages getMessages() {

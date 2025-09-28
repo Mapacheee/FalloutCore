@@ -22,6 +22,8 @@ radiation:
   damage-per-level: 2.0
   effect-duration-seconds: 30
   enable-particles: true
+  armor-damage-min: 1
+  armor-damage-max: 3
 
 database:
   type: "sqlite"
