@@ -12,8 +12,8 @@ faction:
 radiation:
   enabled: true
   enable-sound: true
-  sound-type: "ENTITY_WITHER_AMBIENT"
-  sound-volume: 0.3
+  sound-type: "AMBIENT_BASALT_DELTAS_ADDITIONS"
+  sound-volume: 0.5
   sound-pitch: 1.0
   min-level: 1
   max-level: 5

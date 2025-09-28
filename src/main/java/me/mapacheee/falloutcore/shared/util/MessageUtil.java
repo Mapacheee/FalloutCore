@@ -359,6 +359,75 @@ public class MessageUtil {
         sendMessage(sender, message);
     }
 
+    public void sendTpaRequestSentMessage(CommandSender sender, String playerName) {
+        String message = configService.getMessages().faction().tpaRequestSent()
+                .replace("<player>", playerName);
+        sendMessage(sender, message);
+    }
+
+    public void sendTpaRequestReceivedMessage(CommandSender sender, String playerName) {
+        String message = configService.getMessages().faction().tpaRequestReceived()
+                .replace("<player>", playerName);
+        sendMessage(sender, message);
+    }
+
+    public void sendTpaNoRequestsMessage(CommandSender sender) {
+        String message = configService.getMessages().faction().tpaNoRequests();
+        sendMessage(sender, message);
+    }
+
+    public void sendTpaRequestAcceptedMessage(CommandSender sender, String playerName) {
+        String message = configService.getMessages().faction().tpaRequestAccepted()
+                .replace("<player>", playerName);
+        sendMessage(sender, message);
+    }
+
+    public void sendTpaRequestDeniedMessage(CommandSender sender, String playerName) {
+        String message = configService.getMessages().faction().tpaRequestDenied()
+                .replace("<player>", playerName);
+        sendMessage(sender, message);
+    }
+
+    public void sendTpaRequestAcceptedSenderMessage(CommandSender sender, String playerName) {
+        String message = configService.getMessages().faction().tpaRequestAcceptedSender()
+                .replace("<player>", playerName);
+        sendMessage(sender, message);
+    }
+
+    public void sendTpaRequestDeniedSenderMessage(CommandSender sender, String playerName) {
+        String message = configService.getMessages().faction().tpaRequestDeniedSender()
+                .replace("<player>", playerName);
+        sendMessage(sender, message);
+    }
+
+    public void sendTpaRequestExpiredMessage(CommandSender sender, String playerName) {
+        String message = configService.getMessages().faction().tpaRequestExpired()
+                .replace("<player>", playerName);
+        sendMessage(sender, message);
+    }
+
+    public void sendTpaNotSameFactionMessage(CommandSender sender) {
+        String message = configService.getMessages().faction().tpaNotSameFaction();
+        sendMessage(sender, message);
+    }
+
+    public void sendTpaSelfRequestMessage(CommandSender sender) {
+        String message = configService.getMessages().faction().tpaSelfRequest();
+        sendMessage(sender, message);
+    }
+
+    public void sendTpaPlayerOfflineMessage(CommandSender sender, String playerName) {
+        String message = configService.getMessages().faction().tpaPlayerOffline()
+                .replace("<player>", playerName);
+        sendMessage(sender, message);
+    }
+
+    public void sendTpaAlreadyHasRequestMessage(CommandSender sender, String playerName) {
+        String message = configService.getMessages().faction().tpaAlreadyHasRequest()
+                .replace("<player>", playerName);
+        sendMessage(sender, message);
+    }
+
     private String colorize(String message) {
         return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacyAmpersand()
                 .serialize(

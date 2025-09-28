@@ -50,11 +50,22 @@ public record Messages(
         String noFactionsExist,
         String factionListHeader,
         String factionListItem,
-        // Mensajes para bases
         String baseSet,
         String baseNotSet,
         String baseTeleported,
-        String baseSetOther
+        String baseSetOther,
+        String tpaRequestSent,
+        String tpaRequestReceived,
+        String tpaNoRequests,
+        String tpaRequestAccepted,
+        String tpaRequestDenied,
+        String tpaRequestAcceptedSender,
+        String tpaRequestDeniedSender,
+        String tpaRequestExpired,
+        String tpaNotSameFaction,
+        String tpaSelfRequest,
+        String tpaPlayerOffline,
+        String tpaAlreadyHasRequest
     ) {}
 
     @ConfigSerializable
