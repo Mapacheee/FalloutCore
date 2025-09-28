@@ -142,7 +142,7 @@ public class RadiationService {
                 player.playSound(player.getLocation(), sound, volume, pitch);
             } catch (IllegalArgumentException e) {
                 logger.warn("Tipo de sonido inválido en config: {}. Usando sonido por defecto.", configService.getConfig().radiation().soundType());
-                player.playSound(player.getLocation(), Sound.ENTITY_WITHER_AMBIENT, 0.3f, 1.0f);
+                player.playSound(player.getLocation(), Sound.AMBIENT_BASALT_DELTAS_ADDITIONS, 0.4f, 1.0f);
             }
         }
 
