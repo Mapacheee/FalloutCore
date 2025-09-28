@@ -31,6 +31,8 @@ public class EffectsService {
     private final Map<UUID, Integer> radiationEffectTasks = new ConcurrentHashMap<>();
     private final Map<UUID, Integer> tpaEffectTasks = new ConcurrentHashMap<>();
 
+    private boolean packetEventsReady = false;
+
     @Inject
     public EffectsService(Logger logger, Plugin plugin) {
         this.logger = logger;
@@ -39,10 +41,30 @@ public class EffectsService {
 
     @OnEnable
     public void initialize() {
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            try {
+                if (PacketEvents.getAPI().isInitialized()) {
+
+                    ParticleTypes.HAPPY_VILLAGER.getName();
+                    packetEventsReady = true;
+                    logger.info("packetevents found");
+                } else {
+                    logger.warn("packetevents not found");
+                }
+            } catch (Exception e) {
+                logger.error("Error: ", e.getMessage());
+                packetEventsReady = false;
+            }
+        }, 20L);
+
         logger.info("EffectsService inicializado");
     }
 
     public void startRadiationEffects(Player player, int radiationLevel) {
+        if (!packetEventsReady) {
+            return;
+        }
+
         UUID playerId = player.getUniqueId();
 
         if (playersInRadiation.contains(playerId)) {
@@ -54,7 +76,7 @@ public class EffectsService {
         int taskId = new BukkitRunnable() {
             @Override
             public void run() {
-                if (!player.isOnline() || !playersInRadiation.contains(playerId)) {
+                if (!player.isOnline() || !playersInRadiation.contains(playerId) || !packetEventsReady) {
                     cancel();
                     return;
                 }
@@ -79,21 +101,32 @@ public class EffectsService {
             Bukkit.getScheduler().cancelTask(taskId);
         }
 
-        spawnCleansingParticles(player);
+        if (packetEventsReady) {
+            spawnCleansingParticles(player);
+        }
     }
 
-    // metodo para compatibilidad con radiation service
     public void playRadiationEffect(Player player, int radiationLevel) {
+        if (!packetEventsReady) {
+            return;
+        }
+
         if (!playersInRadiation.contains(player.getUniqueId())) {
             startRadiationEffects(player, radiationLevel);
         }
     }
 
     public void playTeleportEffect(Player player) {
+        if (!packetEventsReady) {
+            return;
+        }
+
         spawnTeleportArrivedParticles(player);
     }
 
     private void spawnTeleportArrivedParticles(Player player) {
+        if (!packetEventsReady) return;
+
         Location loc = player.getLocation().add(0, 0.1, 0);
 
         for (int i = 0; i < 20; i++) {
@@ -115,6 +148,8 @@ public class EffectsService {
     }
 
     private void spawnRadiationParticles(Player player, int radiationLevel) {
+        if (!packetEventsReady) return;
+
         Location loc = player.getLocation().add(0, 1, 0);
 
         for (int i = 0; i < 5 + radiationLevel * 2; i++) {
@@ -155,6 +190,8 @@ public class EffectsService {
     }
 
     private void createRadiationScreenEffect(Player player, int radiationLevel) {
+        if (!packetEventsReady) return;
+
         Location eyeLevel = player.getEyeLocation();
 
         for (int i = 0; i < radiationLevel * 3; i++) {
@@ -176,6 +213,8 @@ public class EffectsService {
     }
 
     private void spawnCleansingParticles(Player player) {
+        if (!packetEventsReady) return;
+
         Location loc = player.getLocation().add(0, 1, 0);
 
         for (int i = 0; i < 15; i++) {
@@ -197,6 +236,10 @@ public class EffectsService {
     }
 
     public void startTpaAnimation(Player player) {
+        if (!packetEventsReady) {
+            return;
+        }
+
         UUID playerId = player.getUniqueId();
 
         if (playersWithTpaEffects.contains(playerId)) {
@@ -207,13 +250,14 @@ public class EffectsService {
 
         int taskId = new BukkitRunnable() {
             int ticks = 0;
-            final int maxTicks = 60;
+            final int maxTicks = 60; // 3 segundos
 
             @Override
             public void run() {
-                if (!player.isOnline() || ticks >= maxTicks) {
-                    playersWithTpaEffects.remove(playerId);
+                if (!player.isOnline() || !playersWithTpaEffects.contains(playerId) || ticks >= maxTicks) {
                     cancel();
+                    playersWithTpaEffects.remove(playerId);
+                    tpaEffectTasks.remove(playerId);
                     return;
                 }
 
@@ -225,7 +269,7 @@ public class EffectsService {
         tpaEffectTasks.put(playerId, taskId);
     }
 
-    public void cancelTpaAnimation(Player player) {
+    public void stopTpaAnimation(Player player) {
         UUID playerId = player.getUniqueId();
         playersWithTpaEffects.remove(playerId);
 
@@ -235,23 +279,22 @@ public class EffectsService {
         }
     }
 
-    private void spawnTpaParticles(Player player, int currentTick) {
-        Location loc = player.getLocation().add(0, 0.1, 0);
-        double progress = (double) currentTick / 60.0;
+    private void spawnTpaParticles(Player player, int tick) {
+        if (!packetEventsReady) return;
 
-        double radius = 0.5 + progress * 1.5;
-        int particles = (int) (8 + progress * 12);
+        Location loc = player.getLocation().add(0, 0.5, 0);
+        double radius = 1.0 + (tick * 0.02);
 
-        for (int i = 0; i < particles; i++) {
-            double angle = (2 * Math.PI * i) / particles;
-            double x = loc.getX() + Math.cos(angle) * radius;
-            double z = loc.getZ() + Math.sin(angle) * radius;
-            double y = loc.getY() + Math.sin(progress * Math.PI * 4) * 0.3;
+        for (int i = 0; i < 8; i++) {
+            double angle = (i / 8.0) * 2 * Math.PI + (tick * 0.1);
+            double x = Math.cos(angle) * radius;
+            double z = Math.sin(angle) * radius;
+            double y = Math.sin(tick * 0.2) * 0.5;
 
             WrapperPlayServerParticle tpaParticle = new WrapperPlayServerParticle(
                 new Particle<>(ParticleTypes.ENCHANT),
                 false,
-                new Vector3d(x, y, z),
+                new Vector3d(loc.getX() + x, loc.getY() + y, loc.getZ() + z),
                 new Vector3f(0.0f, 0.1f, 0.0f),
                 0.1f,
                 1
@@ -260,13 +303,17 @@ public class EffectsService {
             PacketEvents.getAPI().getPlayerManager().sendPacket(player, tpaParticle);
         }
 
-        if (currentTick % 5 == 0) {
+        if (tick % 10 == 0) {
             for (int i = 0; i < 3; i++) {
+                double offsetX = (Math.random() - 0.5) * 0.6;
+                double offsetY = Math.random() * 1;
+                double offsetZ = (Math.random() - 0.5) * 0.6;
+
                 WrapperPlayServerParticle centerParticle = new WrapperPlayServerParticle(
                     new Particle<>(ParticleTypes.END_ROD),
                     false,
-                    new Vector3d(loc.getX(), loc.getY() + i * 0.5, loc.getZ()),
-                    new Vector3f(0.0f, 0.2f, 0.0f),
+                    new Vector3d(loc.getX() + offsetX, loc.getY() + offsetY, loc.getZ() + offsetZ),
+                    new Vector3f(0.0f, 0.05f, 0.0f),
                     0.05f,
                     1
                 );
@@ -276,58 +323,66 @@ public class EffectsService {
         }
     }
 
-    public void createRadiationZoneIndicator(Location location, int radiationLevel, int radius) {
-        Collection<? extends Player> nearbyPlayers = location.getWorld().getPlayers();
-
-        for (Player player : nearbyPlayers) {
-            if (player.getLocation().distance(location) <= radius + 20) {
-                createZoneBorder(player, location, radius, radiationLevel);
-            }
-        }
+    public void cleanupPlayerEffects(Player player) {
+        stopRadiationEffects(player);
+        stopTpaAnimation(player);
     }
 
-    private void createZoneBorder(Player player, Location center, int radius, int radiationLevel) {
-        int particles = Math.min(radius * 4, 100);
+    public void createRadiationZoneIndicator(Location center, int radiationLevel, int radius) {
+        if (!packetEventsReady) return;
 
-        for (int i = 0; i < particles; i++) {
-            double angle = (2 * Math.PI * i) / particles;
-            double x = center.getX() + Math.cos(angle) * radius;
-            double z = center.getZ() + Math.sin(angle) * radius;
-            double y = center.getWorld().getHighestBlockYAt((int) x, (int) z) + 0.1;
+        for (int i = 0; i < 20; i++) {
+            double angle = (i / 20.0) * 2 * Math.PI;
+            double x = Math.cos(angle) * radius;
+            double z = Math.sin(angle) * radius;
 
-            var particleType = switch (radiationLevel) {
-                case 1, 2 -> ParticleTypes.HAPPY_VILLAGER;
-                case 3, 4 -> ParticleTypes.ANGRY_VILLAGER;
-                default -> ParticleTypes.DAMAGE_INDICATOR;
-            };
+            Location particleLocation = center.clone().add(x, 0, z);
 
             WrapperPlayServerParticle borderParticle = new WrapperPlayServerParticle(
-                new Particle<>(particleType),
+                new Particle<>(getRadiationZoneParticleType(radiationLevel)),
                 false,
-                new Vector3d(x, y, z),
+                new Vector3d(particleLocation.getX(), particleLocation.getY(), particleLocation.getZ()),
                 new Vector3f(0.0f, 0.1f, 0.0f),
                 0.1f,
                 1
             );
 
-            PacketEvents.getAPI().getPlayerManager().sendPacket(player, borderParticle);
+            for (Player player : center.getWorld().getPlayers()) {
+                if (player.getLocation().distance(center) <= radius + 50) {
+                    PacketEvents.getAPI().getPlayerManager().sendPacket(player, borderParticle);
+                }
+            }
+        }
+
+        for (int i = 0; i < radiationLevel * 5; i++) {
+            double offsetX = (Math.random() - 0.5) * 10;
+            double offsetY = Math.random() * 5;
+            double offsetZ = (Math.random() - 0.5) * 10;
+
+            WrapperPlayServerParticle centerParticle = new WrapperPlayServerParticle(
+                new Particle<>(ParticleTypes.SMOKE),
+                false,
+                new Vector3d(center.getX() + offsetX, center.getY() + offsetY, center.getZ() + offsetZ),
+                new Vector3f(0.1f, 0.2f, 0.1f),
+                0.05f,
+                1
+            );
+
+            for (Player player : center.getWorld().getPlayers()) {
+                if (player.getLocation().distance(center) <= radius + 50) {
+                    PacketEvents.getAPI().getPlayerManager().sendPacket(player, centerParticle);
+                }
+            }
         }
     }
 
-    public boolean isPlayerInRadiation(Player player) {
-        return playersInRadiation.contains(player.getUniqueId());
-    }
+    private com.github.retrooper.packetevents.protocol.particle.type.ParticleType<?> getRadiationZoneParticleType(int radiationLevel) {
+        if (!packetEventsReady) return null;
 
-    public boolean isPlayerInTpaAnimation(Player player) {
-        return playersWithTpaEffects.contains(player.getUniqueId());
-    }
-
-    public void cleanupPlayerEffects(Player player) {
-        stopRadiationEffects(player);
-        cancelTpaAnimation(player);
-    }
-
-    public int getActiveEffectsCount() {
-        return playersInRadiation.size() + playersWithTpaEffects.size();
+        return switch (radiationLevel) {
+            case 1, 2 -> ParticleTypes.HAPPY_VILLAGER;
+            case 3, 4 -> ParticleTypes.ANGRY_VILLAGER;
+            default -> ParticleTypes.DAMAGE_INDICATOR;
+        };
     }
 }

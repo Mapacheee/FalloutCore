@@ -34,8 +34,7 @@ dependencies {
     api('com.thewinterframework:command:1.0.1')
     annotationProcessor('com.thewinterframework:command:1.0.1')
 
-    implementation 'com.github.retrooper:packetevents-spigot:2.9.5'
-    implementation 'org.spongepowered:configurate-yaml:4.2.0-SNAPSHOT'
+    compileOnly 'com.github.retrooper:packetevents-spigot:2.9.5'
     compileOnly("io.papermc.paper:paper-api:1.21.8-R0.1-SNAPSHOT")
     compileOnly 'me.clip:placeholderapi:2.11.6'
 }

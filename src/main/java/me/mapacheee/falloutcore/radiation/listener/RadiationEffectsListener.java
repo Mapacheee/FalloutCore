@@ -52,8 +52,6 @@ public class RadiationEffectsListener implements Listener {
             createLevelChangeEffect(player, event.getOldLevel(), event.getNewLevel());
         }
 
-        logger.info("efectos visuales actualizados por cambio de nivel de radiación: {} -> {}",
-                   event.getOldLevel(), event.getNewLevel());
     }
 
     private void startZoneIndicatorTask() {
