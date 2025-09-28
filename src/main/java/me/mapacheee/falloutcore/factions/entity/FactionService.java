@@ -193,6 +193,17 @@ public class FactionService {
         }
     }
 
+    public boolean setFactionBaseByName(String factionName, Location location) {
+        Faction faction = factions.get(factionName.toLowerCase());
+        if (faction != null) {
+            faction.setBaseLocation(location);
+            saveFactions();
+            logger.info("faction '{}' base location set by admin", faction.getName());
+            return true;
+        }
+        return false;
+    }
+
     public boolean isSameFaction(Player player1, Player player2) {
         Faction f1 = playerFactions.get(player1.getUniqueId());
         Faction f2 = playerFactions.get(player2.getUniqueId());

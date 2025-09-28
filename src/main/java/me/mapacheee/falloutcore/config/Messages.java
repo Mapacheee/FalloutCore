@@ -6,19 +6,63 @@ import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 @ConfigSerializable
 @Configurate("messages")
 public record Messages(
-    RadiationMessages radiation,
-    FactionMessages faction,
-    GeneralMessages general
+    General general,
+    Faction faction,
+    Radiation radiation
 ) {
 
     @ConfigSerializable
-    public record RadiationMessages(
+    public record General(
+        String prefix,
+        String noPermission,
+        String playersOnly,
+        String playerNotFound,
+        String unknownCommand,
+        String reloadComplete
+    ) {}
+
+    @ConfigSerializable
+    public record Faction(
+        String factionCreated,
+        String factionDeleted,
+        String playerJoined,
+        String playerLeft,
+        String factionNotFound,
+        String alreadyInFaction,
+        String notInFaction,
+        String noPermission,
+        String factionInfo,
+        String factionList,
+        String nexusDestroyed,
+        String pointsAwarded,
+        String friendlyFire,
+        String nameToolong,
+        String aliasToolong,
+        String factionAlreadyExists,
+        String maxFactionsReached,
+        String factionFull,
+        String playerForceJoined,
+        String forceJoinedNotification,
+        String playerNotInFaction,
+        String playerKicked,
+        String kickedNotification,
+        String aliasChanged,
+        String noFactionsExist,
+        String factionListHeader,
+        String factionListItem,
+        // Mensajes para bases
+        String baseSet,
+        String baseNotSet,
+        String baseTeleported,
+        String baseSetOther
+    ) {}
+
+    @ConfigSerializable
+    public record Radiation(
         String enterRadiation,
         String exitRadiation,
         String levelChanged,
         String armorProtection,
-        String armorDegrading,
-        String takingDamage,
         String radiationDamageTitle,
         String radiationDamageSubtitle,
         String radiationArmorTitle,
@@ -47,48 +91,14 @@ public record Messages(
         String immuneFalse,
         String playerImmune,
         String playerNotImmune,
-        String immunityInstructions
-    ) {}
-
-    @ConfigSerializable
-    public record FactionMessages(
-        String factionCreated,
-        String factionDeleted,
-        String playerJoined,
-        String playerLeft,
-        String factionNotFound,
-        String alreadyInFaction,
-        String notInFaction,
-        String noPermission,
-        String factionInfo,
-        String factionList,
-        String nexusDestroyed,
-        String pointsAwarded,
-        String friendlyFire,
-        String nameToolong,
-        String aliasToolong,
-        String factionAlreadyExists,
-        String maxFactionsReached,
-        String factionFull,
-        String playerForceJoined,
-        String forceJoinedNotification,
-        String playerNotInFaction,
-        String playerKicked,
-        String kickedNotification,
-        String aliasChanged,
-        String noFactionsExist,
-        String factionListHeader,
-        String factionListItem
-    ) {}
-
-    @ConfigSerializable
-    public record GeneralMessages(
-        String prefix,
-        String noPlayer,
-        String invalidNumber,
-        String commandUsage,
-        String reloaded,
-        String playersOnly,
-        String noPermission
+        String immunityInstructions,
+        String enterTitle,
+        String enterSubtitle,
+        String damageTitle,
+        String damageSubtitle,
+        String exitTitle,
+        String exitSubtitle,
+        String armorProtectionTitle,
+        String armorProtectionSubtitle
     ) {}
 }

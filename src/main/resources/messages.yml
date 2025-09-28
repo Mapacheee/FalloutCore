@@ -70,3 +70,7 @@ faction:
   noFactionsExist: "&7No existen facciones actualmente."
   factionListHeader: "&6=== Lista de Facciones ==="
   factionListItem: "&e<name> &7(&f<alias>&7) &7- &f<members> miembros"
+  baseSet: "&aBase de la facción establecida en tu ubicación actual."
+  baseNotSet: "&cTu facción no tiene una base establecida."
+  baseTeleported: "&aTeletransportado a la base de tu facción."
+  baseSetOther: "&aBase de la facción &e<faction> &aestablecida en tu ubicación actual."

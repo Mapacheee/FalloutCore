@@ -125,17 +125,59 @@ public final class FactionCommand {
         }
     }
 
-    @Command("setalias <faction> <alias>")
-    @Permission("falloutcore.faction.admin")
-    public void handleSetFactionAlias(Source sender, @Argument("faction") String factionName, @Argument("alias") String newAlias) {
-        if (newAlias.length() > configService.getConfig().faction().maxAliasLength()) {
-            messageUtil.sendFactionAliasTooLongMessage(sender.source(), configService.getConfig().faction().maxAliasLength());
+    @Command("base")
+    public void handleFactionBase(Source sender) {
+        if (!(sender.source() instanceof Player player)) {
+            messageUtil.sendMessage(sender.source(), configService.getMessages().general().playersOnly());
             return;
         }
 
-        if (factionService.setFactionAlias(factionName, newAlias)) {
-            messageUtil.sendFactionAliasChangedMessage(sender.source(), factionName, newAlias);
-            logger.info("Faction '{}' alias changed to '{}' by {}", factionName, newAlias, sender.source().getName());
+        Faction faction = factionService.getPlayerFaction(player);
+        if (faction == null) {
+            messageUtil.sendNotInFactionMessage(sender.source());
+            return;
+        }
+
+        if (!faction.hasBase()) {
+            messageUtil.sendBaseNotSetMessage(sender.source());
+            return;
+        }
+
+        player.teleport(faction.getBaseLocation());
+        messageUtil.sendBaseTeleportedMessage(sender.source());
+        logger.info("Player '{}' teleported to faction '{}' base", player.getName(), faction.getName());
+    }
+
+    @Command("setbase")
+    @Permission("falloutcore.faction.admin")
+    public void handleSetFactionBase(Source sender) {
+        if (!(sender.source() instanceof Player player)) {
+            messageUtil.sendMessage(sender.source(), configService.getMessages().general().playersOnly());
+            return;
+        }
+
+        Faction faction = factionService.getPlayerFaction(player);
+        if (faction == null) {
+            messageUtil.sendNotInFactionMessage(sender.source());
+            return;
+        }
+
+        factionService.setFactionBase(player, player.getLocation());
+        messageUtil.sendBaseSetMessage(sender.source());
+        logger.info("Player '{}' set base for faction '{}'", player.getName(), faction.getName());
+    }
+
+    @Command("setbase <faction>")
+    @Permission("falloutcore.faction.admin")
+    public void handleSetFactionBaseAdmin(Source sender, @Argument("faction") String factionName) {
+        if (!(sender.source() instanceof Player player)) {
+            messageUtil.sendMessage(sender.source(), configService.getMessages().general().playersOnly());
+            return;
+        }
+
+        if (factionService.setFactionBaseByName(factionName, player.getLocation())) {
+            messageUtil.sendBaseSetOtherMessage(sender.source(), factionName);
+            logger.info("Admin '{}' set base for faction '{}'", player.getName(), factionName);
         } else {
             messageUtil.sendFactionNotFoundMessage(sender.source(), factionName);
         }

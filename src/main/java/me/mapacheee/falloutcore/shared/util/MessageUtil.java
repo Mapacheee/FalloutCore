@@ -4,7 +4,6 @@ import com.google.inject.Inject;
 import com.thewinterframework.service.annotation.Service;
 import me.mapacheee.falloutcore.config.Messages;
 import me.mapacheee.falloutcore.shared.config.ConfigService;
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -339,18 +338,33 @@ public class MessageUtil {
         sendMessage(sender, message);
     }
 
-    public String colorize(String message) {
-        if (message.contains("#")) {
-            java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("#[a-fA-F0-9]{6}");
-            java.util.regex.Matcher matcher = pattern.matcher(message);
-            while (matcher.find()) {
-                String hexColor = matcher.group();
-                try {
-                    message = message.replace(hexColor, net.md_5.bungee.api.ChatColor.of(hexColor).toString());
-                } catch (Exception e) {}
-            }
-        }
-        return ChatColor.translateAlternateColorCodes('&', message);
+    public void sendBaseSetMessage(CommandSender sender) {
+        String message = configService.getMessages().faction().baseSet();
+        sendMessage(sender, message);
+    }
+
+    public void sendBaseNotSetMessage(CommandSender sender) {
+        String message = configService.getMessages().faction().baseNotSet();
+        sendMessage(sender, message);
+    }
+
+    public void sendBaseTeleportedMessage(CommandSender sender) {
+        String message = configService.getMessages().faction().baseTeleported();
+        sendMessage(sender, message);
+    }
+
+    public void sendBaseSetOtherMessage(CommandSender sender, String factionName) {
+        String message = configService.getMessages().faction().baseSetOther()
+                .replace("<faction>", factionName);
+        sendMessage(sender, message);
+    }
+
+    private String colorize(String message) {
+        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacyAmpersand()
+                .serialize(
+                    net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacyAmpersand()
+                            .deserialize(message)
+                );
     }
 
     public Messages getMessages() {
