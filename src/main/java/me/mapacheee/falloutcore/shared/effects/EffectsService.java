@@ -31,7 +31,6 @@ public class EffectsService {
     private final Map<UUID, Integer> radiationEffectTasks = new ConcurrentHashMap<>();
     private final Map<UUID, Integer> tpaEffectTasks = new ConcurrentHashMap<>();
 
-    private boolean packetEventsReady = false;
 
     @Inject
     public EffectsService(Logger logger, Plugin plugin) {
@@ -41,29 +40,11 @@ public class EffectsService {
 
     @OnEnable
     public void initialize() {
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            try {
-                if (PacketEvents.getAPI().isInitialized()) {
-
-                    ParticleTypes.HAPPY_VILLAGER.getName();
-                    packetEventsReady = true;
-                    logger.info("packetevents found");
-                } else {
-                    logger.warn("packetevents not found");
-                }
-            } catch (Exception e) {
-                logger.error("Error: ", e.getMessage());
-                packetEventsReady = false;
-            }
-        }, 20L);
-
+        Bukkit.getScheduler().runTaskLater(plugin, ParticleTypes.HAPPY_VILLAGER::getName, 20L);
         logger.info("EffectsService inicializado");
     }
 
     public void startRadiationEffects(Player player, int radiationLevel) {
-        if (!packetEventsReady) {
-            return;
-        }
 
         UUID playerId = player.getUniqueId();
 
@@ -76,7 +57,7 @@ public class EffectsService {
         int taskId = new BukkitRunnable() {
             @Override
             public void run() {
-                if (!player.isOnline() || !playersInRadiation.contains(playerId) || !packetEventsReady) {
+                if (!player.isOnline() || !playersInRadiation.contains(playerId)) {
                     cancel();
                     return;
                 }
@@ -100,16 +81,11 @@ public class EffectsService {
         if (taskId != null) {
             Bukkit.getScheduler().cancelTask(taskId);
         }
+        spawnCleansingParticles(player);
 
-        if (packetEventsReady) {
-            spawnCleansingParticles(player);
-        }
     }
 
     public void playRadiationEffect(Player player, int radiationLevel) {
-        if (!packetEventsReady) {
-            return;
-        }
 
         if (!playersInRadiation.contains(player.getUniqueId())) {
             startRadiationEffects(player, radiationLevel);
@@ -117,16 +93,10 @@ public class EffectsService {
     }
 
     public void playTeleportEffect(Player player) {
-        if (!packetEventsReady) {
-            return;
-        }
-
         spawnTeleportArrivedParticles(player);
     }
 
     private void spawnTeleportArrivedParticles(Player player) {
-        if (!packetEventsReady) return;
-
         Location loc = player.getLocation().add(0, 0.1, 0);
 
         for (int i = 0; i < 20; i++) {
@@ -148,7 +118,6 @@ public class EffectsService {
     }
 
     private void spawnRadiationParticles(Player player, int radiationLevel) {
-        if (!packetEventsReady) return;
 
         Location loc = player.getLocation().add(0, 1, 0);
 
@@ -190,8 +159,6 @@ public class EffectsService {
     }
 
     private void createRadiationScreenEffect(Player player, int radiationLevel) {
-        if (!packetEventsReady) return;
-
         Location eyeLevel = player.getEyeLocation();
 
         for (int i = 0; i < radiationLevel * 3; i++) {
@@ -213,8 +180,6 @@ public class EffectsService {
     }
 
     private void spawnCleansingParticles(Player player) {
-        if (!packetEventsReady) return;
-
         Location loc = player.getLocation().add(0, 1, 0);
 
         for (int i = 0; i < 15; i++) {
@@ -236,10 +201,6 @@ public class EffectsService {
     }
 
     public void startTpaAnimation(Player player) {
-        if (!packetEventsReady) {
-            return;
-        }
-
         UUID playerId = player.getUniqueId();
 
         if (playersWithTpaEffects.contains(playerId)) {
@@ -250,7 +211,7 @@ public class EffectsService {
 
         int taskId = new BukkitRunnable() {
             int ticks = 0;
-            final int maxTicks = 60; // 3 segundos
+            final int maxTicks = 60;
 
             @Override
             public void run() {
@@ -280,8 +241,6 @@ public class EffectsService {
     }
 
     private void spawnTpaParticles(Player player, int tick) {
-        if (!packetEventsReady) return;
-
         Location loc = player.getLocation().add(0, 0.5, 0);
         double radius = 1.0 + (tick * 0.02);
 
@@ -329,15 +288,12 @@ public class EffectsService {
     }
 
     public void createRadiationZoneIndicator(Location center, int radiationLevel, int radius) {
-        if (!packetEventsReady) return;
-
         for (int i = 0; i < 20; i++) {
             double angle = (i / 20.0) * 2 * Math.PI;
             double x = Math.cos(angle) * radius;
             double z = Math.sin(angle) * radius;
 
             Location particleLocation = center.clone().add(x, 0, z);
-
             WrapperPlayServerParticle borderParticle = new WrapperPlayServerParticle(
                 new Particle<>(getRadiationZoneParticleType(radiationLevel)),
                 false,
@@ -377,8 +333,6 @@ public class EffectsService {
     }
 
     private com.github.retrooper.packetevents.protocol.particle.type.ParticleType<?> getRadiationZoneParticleType(int radiationLevel) {
-        if (!packetEventsReady) return null;
-
         return switch (radiationLevel) {
             case 1, 2 -> ParticleTypes.HAPPY_VILLAGER;
             case 3, 4 -> ParticleTypes.ANGRY_VILLAGER;

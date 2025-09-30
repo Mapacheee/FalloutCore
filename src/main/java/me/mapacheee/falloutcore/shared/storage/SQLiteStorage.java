@@ -37,10 +37,10 @@ public class SQLiteStorage {
     void initialize() {
         try {
             initializeTables();
-            logger.info("Database initialized successfully");
+            logger.info("database initialized");
         } catch (Exception e) {
-            logger.error("Critical error initializing database", e);
-            throw new RuntimeException("Failed to initialize database", e);
+            logger.error("error initializing database", e);
+            throw new RuntimeException("failed to initialize database", e);
         }
     }
 
@@ -48,14 +48,14 @@ public class SQLiteStorage {
         try {
             initializeTables();
         } catch (Exception e) {
-            logger.error("Error ensuring tables exist", e);
+            logger.error("error ensuring tables exist", e);
             throw new RuntimeException("Failed to ensure tables exist", e);
         }
     }
 
     private void initializeTables() {
         try (Connection conn = databaseUtils.getConnection()) {
-            logger.info("Creating factions table...");
+            logger.info("creating factions table...");
             conn.createStatement().execute(
                     "CREATE TABLE IF NOT EXISTS factions (" +
                             "    id INTEGER PRIMARY KEY AUTOINCREMENT," +
@@ -72,7 +72,7 @@ public class SQLiteStorage {
                             "    nexus_z REAL" +
                             ");");
 
-            logger.info("Creating faction_players table...");
+            logger.info("ccreating faction_players table...");
             conn.createStatement().execute(
                     "CREATE TABLE IF NOT EXISTS faction_players (" +
                             "    id INTEGER PRIMARY KEY AUTOINCREMENT," +
@@ -81,10 +81,10 @@ public class SQLiteStorage {
                             "    FOREIGN KEY(faction_id) REFERENCES factions(id) ON DELETE CASCADE" +
                             ");");
 
-            logger.info("Database tables created successfully");
+            logger.info("database tables created successfully");
         } catch (SQLException e) {
-            logger.error("Failed to initialize database tables", e);
-            throw new RuntimeException("Database initialization failed", e);
+            logger.error("failed to initialize database tables", e);
+            throw new RuntimeException("database initialization failed", e);
         }
     }
 
@@ -127,7 +127,7 @@ public class SQLiteStorage {
             stmt.executeUpdate();
 
         } catch (SQLException e) {
-            logger.error("Error al guardar facción: " + faction.getName(), e);
+            logger.error("error on save factions: " + faction.getName(), e);
         }
     }
 
@@ -141,7 +141,7 @@ public class SQLiteStorage {
             stmt.executeUpdate();
 
         } catch (SQLException e) {
-            logger.error("Error al eliminar facción: " + factionName, e);
+            logger.error("error on delete factions: " + factionName, e);
         }
     }
 
@@ -188,7 +188,7 @@ public class SQLiteStorage {
             }
 
         } catch (SQLException e) {
-            logger.error("Error al cargar facciones", e);
+            logger.error("error on load factions", e);
         }
 
         return factions;
@@ -210,7 +210,7 @@ public class SQLiteStorage {
             }
 
         } catch (SQLException e) {
-            logger.error("Error al cargar miembros de facción: " + faction.getName(), e);
+            logger.error("error on load faction members: " + faction.getName(), e);
         }
     }
 
@@ -225,7 +225,7 @@ public class SQLiteStorage {
             stmt.executeUpdate();
 
         } catch (SQLException e) {
-            logger.error("Error al guardar jugador en facción: " + playerId, e);
+            logger.error("error on save a playe of a faction: " + playerId, e);
         }
     }
 
@@ -239,7 +239,7 @@ public class SQLiteStorage {
             stmt.executeUpdate();
 
         } catch (SQLException e) {
-            logger.error("error al remover jugador de facción: " + playerId, e);
+            logger.error("error on remove a player of a faction: {}", playerId, e);
         }
     }
 }

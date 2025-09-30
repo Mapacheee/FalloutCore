@@ -127,16 +127,11 @@ public final class FactionCommand {
 
     @Command("base")
     public void handleFactionBase(Source sender) {
-        if (!(sender.source() instanceof Player player)) {
-            messageUtil.sendMessage(sender.source(), configService.getMessages().general().playersOnly());
-            return;
-        }
+        Player player = validatePlayerSender(sender);
+        if (player == null) return;
 
-        Faction faction = factionService.getPlayerFaction(player);
-        if (faction == null) {
-            messageUtil.sendNotInFactionMessage(sender.source());
-            return;
-        }
+        Faction faction = validatePlayerFaction(sender, player);
+        if (faction == null) return;
 
         if (!faction.hasBase()) {
             messageUtil.sendBaseNotSetMessage(sender.source());
@@ -151,16 +146,11 @@ public final class FactionCommand {
     @Command("setbase")
     @Permission("falloutcore.faction.admin")
     public void handleSetFactionBase(Source sender) {
-        if (!(sender.source() instanceof Player player)) {
-            messageUtil.sendMessage(sender.source(), configService.getMessages().general().playersOnly());
-            return;
-        }
+        Player player = validatePlayerSender(sender);
+        if (player == null) return;
 
-        Faction faction = factionService.getPlayerFaction(player);
-        if (faction == null) {
-            messageUtil.sendNotInFactionMessage(sender.source());
-            return;
-        }
+        Faction faction = validatePlayerFaction(sender, player);
+        if (faction == null) return;
 
         factionService.setFactionBase(player, player.getLocation());
         messageUtil.sendBaseSetMessage(sender.source());
@@ -170,10 +160,8 @@ public final class FactionCommand {
     @Command("setbase <faction>")
     @Permission("falloutcore.faction.admin")
     public void handleSetFactionBaseAdmin(Source sender, @Argument("faction") String factionName) {
-        if (!(sender.source() instanceof Player player)) {
-            messageUtil.sendMessage(sender.source(), configService.getMessages().general().playersOnly());
-            return;
-        }
+        Player player = validatePlayerSender(sender);
+        if (player == null) return;
 
         if (factionService.setFactionBaseByName(factionName, player.getLocation())) {
             messageUtil.sendBaseSetOtherMessage(sender.source(), factionName);
@@ -185,16 +173,11 @@ public final class FactionCommand {
 
     @Command("info")
     public void handleFactionInfo(Source sender) {
-        if (!(sender.source() instanceof Player player)) {
-            messageUtil.sendMessage(sender.source(), configService.getMessages().general().playersOnly());
-            return;
-        }
+        Player player = validatePlayerSender(sender);
+        if (player == null) return;
 
-        Faction faction = factionService.getPlayerFaction(player);
-        if (faction == null) {
-            messageUtil.sendNotInFactionMessage(sender.source());
-            return;
-        }
+        Faction faction = validatePlayerFaction(sender, player);
+        if (faction == null) return;
 
         messageUtil.sendFactionInfoMessage(sender.source(),
             faction.getName(),
@@ -223,20 +206,30 @@ public final class FactionCommand {
 
     @Command("leave")
     public void handleLeaveFaction(Source sender) {
-        if (!(sender.source() instanceof Player player)) {
-            messageUtil.sendMessage(sender.source(), configService.getMessages().general().playersOnly());
-            return;
-        }
+        Player player = validatePlayerSender(sender);
+        if (player == null) return;
 
-        Faction faction = factionService.getPlayerFaction(player);
-        if (faction == null) {
-            messageUtil.sendNotInFactionMessage(sender.source());
-            return;
-        }
+        Faction faction = validatePlayerFaction(sender, player);
+        if (faction == null) return;
 
         if (factionService.kickPlayer(player)) {
             messageUtil.sendPlayerLeftFactionMessage(sender.source(), player.getName(), faction.getName());
-            logger.info("Player '{}' left faction '{}'", player.getName(), faction.getName());
         }
+    }
+    private Player validatePlayerSender(Source sender) {
+        if (!(sender.source() instanceof Player player)) {
+            messageUtil.sendMessage(sender.source(), configService.getMessages().general().playersOnly());
+            return null;
+        }
+        return player;
+    }
+
+    private Faction validatePlayerFaction(Source sender, Player player) {
+        Faction faction = factionService.getPlayerFaction(player);
+        if (faction == null) {
+            messageUtil.sendNotInFactionMessage(sender.source());
+            return null;
+        }
+        return faction;
     }
 }

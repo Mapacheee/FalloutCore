@@ -207,7 +207,7 @@ public class FactionService {
     public boolean isSameFaction(Player player1, Player player2) {
         Faction f1 = playerFactions.get(player1.getUniqueId());
         Faction f2 = playerFactions.get(player2.getUniqueId());
-        return f1 != null && f2 != null && f1.equals(f2);
+        return f1 != null && f1.equals(f2);
     }
 
     public Faction getPlayerFaction(Player player) {

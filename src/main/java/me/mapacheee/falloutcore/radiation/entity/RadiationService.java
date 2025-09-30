@@ -18,6 +18,8 @@ import org.bukkit.Registry;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -127,7 +129,6 @@ public class RadiationService {
 
             if (!exitEvent.isCancelled()) {
                 playersInRadiation.put(player.getUniqueId(), false);
-                // Detener efectos visuales de radiación
                 effectsService.stopRadiationEffects(player);
             }
         }
@@ -236,15 +237,18 @@ public class RadiationService {
         for (int i = 0; i < armor.length; i++) {
             ItemStack piece = armor[i];
             if (piece != null && piece.getType().getMaxDurability() > 0) {
-                short currentDamage = piece.getDurability();
-                short newDamage = (short) (currentDamage + ThreadLocalRandom.current().nextInt(minDamage, maxDamage + 1));
+                ItemMeta meta = piece.getItemMeta();
+                if (meta instanceof Damageable damageable) {
+                    int currentDamage = damageable.getDamage();
+                    int newDamage = currentDamage + ThreadLocalRandom.current().nextInt(minDamage, maxDamage + 1);
 
-                if (newDamage >= piece.getType().getMaxDurability()) {
-                    piece.setType(Material.AIR);
-                } else {
-                    piece.setDurability(newDamage);
+                    if (newDamage >= piece.getType().getMaxDurability()) {
+                        piece.setAmount(0);
+                    } else {
+                        damageable.setDamage(newDamage);
+                        piece.setItemMeta(meta);
+                    }
                 }
-
                 switch (i) {
                     case 0 -> player.getInventory().setHelmet(piece);
                     case 1 -> player.getInventory().setChestplate(piece);

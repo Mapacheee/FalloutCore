@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 @Service
 public class ConfigService {
@@ -90,9 +91,9 @@ public class ConfigService {
 
             FileConfiguration messagesConfig = YamlConfiguration.loadConfiguration(messagesFile);
             InputStreamReader reader = new InputStreamReader(
-                plugin.getResource("messages.yml"), StandardCharsets.UTF_8);
-            YamlConfiguration defaultMessages = YamlConfiguration.loadConfiguration(reader);
-            messagesConfig.setDefaults(defaultMessages);
+                Objects.requireNonNull(plugin.getResource("messages.yml")), StandardCharsets.UTF_8);
+                YamlConfiguration defaultMessages = YamlConfiguration.loadConfiguration(reader);
+                messagesConfig.setDefaults(defaultMessages);
 
             this.messages = new Messages(
                 new Messages.General(

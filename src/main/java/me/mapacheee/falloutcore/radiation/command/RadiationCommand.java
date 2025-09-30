@@ -112,18 +112,8 @@ public final class RadiationCommand {
     @Command("check [player]")
     @Permission("falloutcore.radiation.admin")
     public void handleCheckPlayer(Source sender, @Argument("player") Player target) {
-        if (target == null && sender.source() instanceof Player) {
-            target = (Player) sender.source();
-        }
-
-        if (target == null) {
-            if (sender.source() instanceof Player player) {
-                messageUtil.sendRadiationSpecifyPlayerConsoleMessage(player);
-            } else {
-                messageUtil.sendMessage(sender.source(), "Debes especificar un jugador desde la consola");
-            }
-            return;
-        }
+        target = validateTargetPlayer(sender, target);
+        if (target == null) return;
 
         boolean inRadiation = radiationService.isPlayerInRadiation(target);
         boolean isImmune = radiationService.isPlayerImmune(target);
@@ -154,18 +144,8 @@ public final class RadiationCommand {
             return;
         }
 
-        if (target == null && sender.source() instanceof Player) {
-            target = (Player) sender.source();
-        }
-
-        if (target == null) {
-            if (sender.source() instanceof Player player) {
-                messageUtil.sendRadiationSpecifyPlayerConsoleMessage(player);
-            } else {
-                messageUtil.sendMessage(sender.source(), "Debes especificar un jugador desde la consola");
-            }
-            return;
-        }
+        target = validateTargetPlayer(sender, target);
+        if (target == null) return;
 
         boolean isImmune = radiationService.isPlayerImmune(target);
 
@@ -184,6 +164,23 @@ public final class RadiationCommand {
                 messageUtil.sendMessage(sender.source(), "Para otorgar inmunidad usa: /lp user " + target.getName() + " permission set falloutcore.radiation.immune true");
             }
         }
+    }
+
+    private Player validateTargetPlayer(Source sender, Player target) {
+        if (target == null && sender.source() instanceof Player) {
+            target = (Player) sender.source();
+        }
+
+        if (target == null) {
+            if (sender.source() instanceof Player player) {
+                messageUtil.sendRadiationSpecifyPlayerConsoleMessage(player);
+            } else {
+                messageUtil.sendMessage(sender.source(), "Debes especificar un jugador desde la consola");
+            }
+            return null;
+        }
+
+        return target;
     }
 
     private int getPlayersInRadiationCount() {
