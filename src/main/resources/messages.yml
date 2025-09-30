@@ -3,7 +3,7 @@ general:
   noPlayer: "&cJugador no encontrado."
   invalidNumber: "&cNúmero inválido."
   commandUsage: "&eUso: <usage>"
-  reloaded: "&aPlugin recargado exitosamente."
+  reloadComplete: "&aConfiguración recargada exitosamente en <duration>ms."
   playersOnly: "&cSolo los jugadores pueden usar este comando."
   noPermission: "&cNo tienes permisos para ejecutar este comando."
 

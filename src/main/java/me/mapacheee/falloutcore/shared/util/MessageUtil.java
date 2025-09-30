@@ -428,6 +428,31 @@ public class MessageUtil {
         sendMessage(sender, message);
     }
 
+    public void sendReloadSuccessMessage(Player player, long duration) {
+        String message = configService.getMessages().general().reloadComplete()
+                .replace("<duration>", String.valueOf(duration));
+        sendMessage(player, message);
+    }
+
+    public void sendReloadErrorMessage(Player player) {
+        String message = "&cError al recargar las configuraciones. Revisa la consola para más detalles.";
+        sendMessage(player, message);
+    }
+
+    public void sendVersionMessage(Player player) {
+        String message = "&6FalloutCore &ev" + getVersion() + " &7- Plugin de facciones y radiación";
+        sendMessage(player, message);
+    }
+
+    private String getVersion() {
+        try {
+            return getClass().getPackage().getImplementationVersion() != null ?
+                   getClass().getPackage().getImplementationVersion() : "1.0-SNAPSHOT";
+        } catch (Exception e) {
+            return "1.0";
+        }
+    }
+
     private String colorize(String message) {
         if (message == null) return "";
 

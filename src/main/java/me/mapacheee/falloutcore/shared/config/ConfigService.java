@@ -208,9 +208,19 @@ public class ConfigService {
         return messages;
     }
 
-    public void reload() {
-        plugin.reloadConfig();
-        loadConfigurations();
-        logger.info("Configuraciones recargadas");
+    public boolean reloadConfigurations() {
+        try {
+            logger.info("Recargando configuraciones...");
+            loadConfigurations();
+            logger.info("Configuraciones recargadas");
+            return true;
+        } catch (Exception e) {
+            logger.error("Error al recargar configuraciones", e);
+            return false;
+        }
+    }
+
+    public String getPluginVersion() {
+        return plugin.getPluginMeta().getVersion();
     }
 }
