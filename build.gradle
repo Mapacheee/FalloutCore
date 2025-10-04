@@ -35,7 +35,7 @@ dependencies {
     annotationProcessor('com.thewinterframework:command:1.0.1')
 
     compileOnly 'com.github.retrooper:packetevents-spigot:2.9.5'
-    compileOnly("io.papermc.paper:paper-api:1.21.8-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:1.21.9-R0.1-SNAPSHOT")
     compileOnly 'me.clip:placeholderapi:2.11.6'
 }
 
