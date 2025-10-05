@@ -55,9 +55,6 @@ public final class BombCommand {
         if (!targetPlayer.equals(sender.source())) {
             messageUtil.sendBombGivenToPlayerMessage(sender.source(), targetPlayer.getName());
         }
-
-        logger.info("Bomba nuclear entregada a {} por {}",
-                   targetPlayer.getName(), sender.source().getName());
     }
 
     @Command("detonate <x> <y> <z>")

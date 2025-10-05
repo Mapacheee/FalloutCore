@@ -3,15 +3,14 @@ package me.mapacheee.falloutcore.config;
 import com.thewinterframework.configurate.config.Configurate;
 import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 
-@ConfigSerializable
-@Configurate("messages")
-public record Messages(
-    General general,
-    Faction faction,
-    Radiation radiation,
-    Bombs bombs
-) {
-
+    @ConfigSerializable
+    @Configurate("messages")
+    public record Messages(
+        General general,
+        Faction faction,
+        Radiation radiation,
+        Bombs bombs
+    ) {
 
     @ConfigSerializable
     public record General(
@@ -34,15 +33,11 @@ public record Messages(
         String notInFaction,
         String noPermission,
         String factionInfo,
-        String factionList,
-        String nexusDestroyed,
-        String pointsAwarded,
-        String friendlyFire,
-        String nameToolong,
-        String aliasToolong,
         String factionAlreadyExists,
         String maxFactionsReached,
         String factionFull,
+        String nameToolong,
+        String aliasToolong,
         String playerForceJoined,
         String forceJoinedNotification,
         String playerNotInFaction,
@@ -67,7 +62,8 @@ public record Messages(
         String tpaNotSameFaction,
         String tpaSelfRequest,
         String tpaPlayerOffline,
-        String tpaAlreadyHasRequest
+        String tpaAlreadyHasRequest,
+        String friendlyFire
     ) {}
 
     @ConfigSerializable

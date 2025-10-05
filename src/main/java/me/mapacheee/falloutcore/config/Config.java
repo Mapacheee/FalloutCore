@@ -65,7 +65,10 @@ public record Config(
         PostRadiationConfig postRadiation
     ) {
         public NuclearConfig() {
-            this(100, 25, 30, "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNWU2YjIwZjY4MTQyNDUyYzRkN2JkNzNiNTgwNjQ4NzQwYzI3ZGIyOTMxODVhM2IyOGM0YzJhNmE2MmY4YmEwIn19fQ==", 300, new TimerConfig(), new ExplosionPhasesConfig(), new MushroomConfig(), new ScreenEffectsConfig(), new PostRadiationConfig());
+            this(100, 25, 30,
+                 "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvN2ZhZjNlZmJmZjZkN2VmNDY1ZWNhY2JjNTE3ZjRkYWQ1Y2MxYTIyNjFlYTdhNjA5ZjIxNmFhZTQ4Nzg0In19fQ==",
+                 300, new TimerConfig(), new ExplosionPhasesConfig(), new MushroomConfig(),
+                 new ScreenEffectsConfig(), new PostRadiationConfig());
         }
     }
 

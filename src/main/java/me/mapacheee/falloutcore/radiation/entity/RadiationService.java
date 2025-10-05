@@ -289,7 +289,6 @@ public class RadiationService {
             }
         }
 
-        // Efectos visuales
         effectsService.playRadiationEffect(player, currentRadiationLevel);
     }
 

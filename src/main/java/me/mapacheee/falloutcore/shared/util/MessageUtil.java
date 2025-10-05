@@ -6,13 +6,16 @@ import me.mapacheee.falloutcore.shared.config.ConfigService;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.title.Title;
+import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.SkullMeta;
 
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.List;
-
+import java.util.stream.Collectors;
 
 @Service
 public class MessageUtil {
@@ -51,9 +54,8 @@ public class MessageUtil {
         player.showTitle(adventureTitle);
     }
 
-    public void sendRadiationEnterMessage(Player player, int level) {
-        String message = configService.getMessages().radiation().enterRadiation()
-                .replace("<level>", String.valueOf(level));
+    public void sendRadiationEnterMessage(Player player, int radiationLevel) {
+        String message = configService.getMessages().radiation().enterRadiation();
         sendMessage(player, message);
     }
 
@@ -90,84 +92,6 @@ public class MessageUtil {
                 .replace("<armor>", armorType)
                 .replace("<level>", String.valueOf(level));
         sendTitle(player, title, subtitle);
-    }
-
-    public void sendFactionCreatedMessage(CommandSender sender, String factionName) {
-        String message = configService.getMessages().faction().factionCreated()
-                .replace("<faction>", factionName);
-        sendMessage(sender, message);
-    }
-
-    public void sendFactionDeletedMessage(CommandSender sender, String factionName) {
-        String message = configService.getMessages().faction().factionDeleted()
-                .replace("<faction>", factionName);
-        sendMessage(sender, message);
-    }
-
-    public void sendPlayerJoinedFactionMessage(CommandSender sender, String playerName, String factionName) {
-        String message = configService.getMessages().faction().playerJoined()
-                .replace("<player>", playerName)
-                .replace("<faction>", factionName);
-        sendMessage(sender, message);
-    }
-
-    public void sendPlayerLeftFactionMessage(CommandSender sender, String playerName, String factionName) {
-        String message = configService.getMessages().faction().playerLeft()
-                .replace("<player>", playerName)
-                .replace("<faction>", factionName);
-        sendMessage(sender, message);
-    }
-
-    public void sendFactionNotFoundMessage(CommandSender sender, String factionName) {
-        String message = configService.getMessages().faction().factionNotFound()
-                .replace("<faction>", factionName);
-        sendMessage(sender, message);
-    }
-
-    public void sendAlreadyInFactionMessage(CommandSender sender) {
-        String message = configService.getMessages().faction().alreadyInFaction();
-        sendMessage(sender, message);
-    }
-
-    public void sendNotInFactionMessage(CommandSender sender) {
-        String message = configService.getMessages().faction().notInFaction();
-        sendMessage(sender, message);
-    }
-
-    public void sendNoPermissionMessage(CommandSender sender) {
-        String message = configService.getMessages().faction().noPermission();
-        sendMessage(sender, message);
-    }
-
-    public void sendFactionInfoMessage(CommandSender sender, String factionName, String alias, int members, String base) {
-        String message = configService.getMessages().faction().factionInfo()
-                .replace("<faction>", factionName)
-                .replace("<alias>", alias)
-                .replace("<members>", String.valueOf(members))
-                .replace("<base>", base);
-        sendMessage(sender, message);
-    }
-
-    public void sendFactionAlreadyExistsMessage(CommandSender sender, String factionName) {
-        String message = configService.getMessages().faction().factionAlreadyExists()
-                .replace("<faction>", factionName);
-        sendMessage(sender, message);
-    }
-
-    public void sendMaxFactionsReachedMessage(CommandSender sender, int maxFactions) {
-        String message = configService.getMessages().faction().maxFactionsReached()
-                .replace("<max>", String.valueOf(maxFactions));
-        sendMessage(sender, message);
-    }
-
-    public void sendFactionFullMessage(CommandSender sender) {
-        String message = configService.getMessages().faction().factionFull();
-        sendMessage(sender, message);
-    }
-
-    public void sendFactionFriendlyFireMessage(CommandSender sender) {
-        String message = configService.getMessages().faction().friendlyFire();
-        sendMessage(sender, message);
     }
 
     public void sendRadiationSystemStatusMessage(Player player) {
@@ -288,6 +212,84 @@ public class MessageUtil {
         String message = configService.getMessages().radiation().immunityInstructions()
                 .replace("<player>", targetName);
         sendMessage(player, message);
+    }
+
+    public void sendFactionCreatedMessage(CommandSender sender, String factionName) {
+        String message = configService.getMessages().faction().factionCreated()
+                .replace("<faction>", factionName);
+        sendMessage(sender, message);
+    }
+
+    public void sendFactionDeletedMessage(CommandSender sender, String factionName) {
+        String message = configService.getMessages().faction().factionDeleted()
+                .replace("<faction>", factionName);
+        sendMessage(sender, message);
+    }
+
+    public void sendPlayerJoinedFactionMessage(CommandSender sender, String playerName, String factionName) {
+        String message = configService.getMessages().faction().playerJoined()
+                .replace("<player>", playerName)
+                .replace("<faction>", factionName);
+        sendMessage(sender, message);
+    }
+
+    public void sendPlayerLeftFactionMessage(CommandSender sender, String playerName, String factionName) {
+        String message = configService.getMessages().faction().playerLeft()
+                .replace("<player>", playerName)
+                .replace("<faction>", factionName);
+        sendMessage(sender, message);
+    }
+
+    public void sendFactionNotFoundMessage(CommandSender sender, String factionName) {
+        String message = configService.getMessages().faction().factionNotFound()
+                .replace("<faction>", factionName);
+        sendMessage(sender, message);
+    }
+
+    public void sendAlreadyInFactionMessage(CommandSender sender) {
+        String message = configService.getMessages().faction().alreadyInFaction();
+        sendMessage(sender, message);
+    }
+
+    public void sendNotInFactionMessage(CommandSender sender) {
+        String message = configService.getMessages().faction().notInFaction();
+        sendMessage(sender, message);
+    }
+
+    public void sendNoPermissionMessage(CommandSender sender) {
+        String message = configService.getMessages().faction().noPermission();
+        sendMessage(sender, message);
+    }
+
+    public void sendFactionInfoMessage(CommandSender sender, String factionName, String alias, int members, String base) {
+        String message = configService.getMessages().faction().factionInfo()
+                .replace("<faction>", factionName)
+                .replace("<alias>", alias)
+                .replace("<members>", String.valueOf(members))
+                .replace("<base>", base);
+        sendMessage(sender, message);
+    }
+
+    public void sendFactionAlreadyExistsMessage(CommandSender sender, String factionName) {
+        String message = configService.getMessages().faction().factionAlreadyExists()
+                .replace("<faction>", factionName);
+        sendMessage(sender, message);
+    }
+
+    public void sendMaxFactionsReachedMessage(CommandSender sender, int maxFactions) {
+        String message = configService.getMessages().faction().maxFactionsReached()
+                .replace("<max>", String.valueOf(maxFactions));
+        sendMessage(sender, message);
+    }
+
+    public void sendFactionFullMessage(CommandSender sender) {
+        String message = configService.getMessages().faction().factionFull();
+        sendMessage(sender, message);
+    }
+
+    public void sendFactionFriendlyFireMessage(CommandSender sender) {
+        String message = configService.getMessages().faction().friendlyFire();
+        sendMessage(sender, message);
     }
 
     public void sendFactionNameTooLongMessage(CommandSender sender, int maxLength) {
@@ -465,15 +467,6 @@ public class MessageUtil {
         sendMessage(player, message);
     }
 
-    private String getVersion() {
-        try {
-            return getClass().getPackage().getImplementationVersion() != null ?
-                    getClass().getPackage().getImplementationVersion() : "1.0-SNAPSHOT";
-        } catch (Exception e) {
-            return "1.0";
-        }
-    }
-
     public void sendBombModuleDisabledMessage(CommandSender sender) {
         String message = configService.getMessages().bombs().moduleDisabled();
         sendMessage(sender, message);
@@ -536,44 +529,6 @@ public class MessageUtil {
         sendMessage(player, message);
     }
 
-    public ItemStack createBombItem() {
-        ItemStack bombItem = new ItemStack(org.bukkit.Material.PLAYER_HEAD);
-        org.bukkit.inventory.meta.SkullMeta meta = (org.bukkit.inventory.meta.SkullMeta) bombItem.getItemMeta();
-
-        if (meta != null) {
-            Component displayName = colorizeToComponent(configService.getMessages().bombs().bombItemName());
-            meta.displayName(displayName);
-
-            String loreText = configService.getMessages().bombs().bombItemLore();
-            List<Component> loreComponents = java.util.Arrays.stream(loreText.split("\\n"))
-                    .map(this::colorizeToComponent)
-                    .collect(java.util.stream.Collectors.toList());
-            meta.lore(loreComponents);
-
-            bombItem.setItemMeta(meta);
-        }
-
-        return bombItem;
-    }
-
-    private String colorize(String message) {
-        if (message == null) return "";
-
-        message = message.replaceAll("&#([A-Fa-f0-9]{6})", "<#$1>");
-        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection()
-                .serialize(
-                        net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacyAmpersand()
-                                .deserialize(message)
-                );
-    }
-
-    private Component colorizeToComponent(String message) {
-        if (message == null) return Component.empty();
-
-        message = message.replaceAll("&#([A-Fa-f0-9]{6})", "<#$1>");
-        return LegacyComponentSerializer.legacyAmpersand().deserialize(message);
-    }
-
     public void sendBombCancelledMessage(CommandSender sender) {
         String message = configService.getMessages().bombs().bombCancelled();
         sendMessage(sender, message);
@@ -631,7 +586,6 @@ public class MessageUtil {
         sendMessage(sender, message);
     }
 
-
     public void sendBombInfoMessage(CommandSender sender, int radius, int depth, int duration, int cooldown, String radiationStatus, String mushroomStatus) {
         String message = configService.getMessages().bombs().bombInfo()
                 .replace("<radius>", String.valueOf(radius))
@@ -656,5 +610,41 @@ public class MessageUtil {
     public void sendPlayersOnlyCommandMessage(CommandSender sender) {
         String message = configService.getMessages().bombs().playersOnlyCommand();
         sendMessage(sender, message);
+    }
+
+    public ItemStack createBombItem() {
+        ItemStack bombItem = new ItemStack(Material.PLAYER_HEAD);
+        SkullMeta meta = (SkullMeta) bombItem.getItemMeta();
+
+        if (meta != null) {
+            Component displayName = colorizeToComponent(configService.getMessages().bombs().bombItemName());
+            meta.displayName(displayName);
+
+            String loreText = configService.getMessages().bombs().bombItemLore();
+            List<Component> loreComponents = Arrays.stream(loreText.split("\\n"))
+                    .map(this::colorizeToComponent)
+                    .collect(Collectors.toList());
+            meta.lore(loreComponents);
+
+            bombItem.setItemMeta(meta);
+        }
+
+        return bombItem;
+    }
+
+    private String getVersion() {
+        try {
+            return getClass().getPackage().getImplementationVersion() != null ?
+                    getClass().getPackage().getImplementationVersion() : "1.0-SNAPSHOT";
+        } catch (Exception e) {
+            return "1.0";
+        }
+    }
+
+    private Component colorizeToComponent(String message) {
+        if (message == null) return Component.empty();
+
+        message = message.replaceAll("&#([A-Fa-f0-9]{6})", "<#$1>");
+        return LegacyComponentSerializer.legacyAmpersand().deserialize(message);
     }
 }

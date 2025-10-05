@@ -84,8 +84,14 @@ public class BombListener implements Listener {
             return false;
         }
 
-        String displayName = meta.getDisplayName();
-        return displayName != null && displayName.contains("BOMBA NUCLEAR");
+        net.kyori.adventure.text.Component displayName = meta.displayName();
+        if (displayName == null) {
+            return false;
+        }
+
+        String displayNameText = net.kyori.adventure.text.serializer.
+                                 plain.PlainTextComponentSerializer.plainText().serialize(displayName);
+        return displayNameText.contains("BOMBA NUCLEAR");
     }
 
     private boolean confirmBombActivation(Player player) {

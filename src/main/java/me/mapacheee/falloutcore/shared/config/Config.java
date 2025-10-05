@@ -2,14 +2,15 @@ package me.mapacheee.falloutcore.shared.config;
 
 import com.thewinterframework.configurate.config.Configurate;
 import org.spongepowered.configurate.objectmapping.ConfigSerializable;
+import java.util.List;
 
-    @ConfigSerializable
-    @Configurate("config")
-    public record Config(
-            FactionConfig faction,
-            RadiationConfig radiation,
-            BombConfig bomb
-    ) {
+@ConfigSerializable
+@Configurate("config")
+public record Config(
+    FactionConfig faction,
+    RadiationConfig radiation,
+    BombConfig bomb
+) {
 
     @ConfigSerializable
     public record FactionConfig(
@@ -103,7 +104,7 @@ import org.spongepowered.configurate.objectmapping.ConfigSerializable;
     public record ShockwavePhase(
         int durationSeconds,
         int expansionSpeed,
-        java.util.List<DestructionLayer> destructionLayers
+        List<DestructionLayer> destructionLayers
     ) {}
 
     @ConfigSerializable

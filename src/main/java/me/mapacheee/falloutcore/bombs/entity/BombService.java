@@ -179,7 +179,7 @@ public class BombService {
                 sendCountdownEffects(bomb, secondsLeft);
                 secondsLeft--;
             }
-        }.runTaskTimer(plugin, 0L, 20L); // Cada segundo
+        }.runTaskTimer(plugin, 0L, 20L);
     }
 
     private void sendCountdownEffects(NuclearBomb bomb, int secondsLeft) {
@@ -263,7 +263,7 @@ public class BombService {
                     }
                 }
             }
-        }.runTaskTimer(plugin, 20L, 20L); // Cada segundo
+        }.runTaskTimer(plugin, 20L, 20L);
     }
 
     public Collection<NuclearBomb> getActiveBombs() {

@@ -145,7 +145,7 @@ public class ExplosionTask extends BukkitRunnable {
             return;
         }
 
-        if (ticksElapsed % 10 == 0) { // Cada 10 ticks
+        if (ticksElapsed % 10 == 0) {
             effectsService.spawnMushroomCloud(centerLocation, mushroom);
         }
 
