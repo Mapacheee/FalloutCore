@@ -2,9 +2,11 @@ package me.mapacheee.falloutcore.factions.command;
 
 import com.google.inject.Inject;
 import com.thewinterframework.command.CommandComponent;
+import com.thewinterframework.configurate.Container;
 import me.mapacheee.falloutcore.factions.entity.Faction;
 import me.mapacheee.falloutcore.factions.entity.FactionService;
-import me.mapacheee.falloutcore.shared.config.ConfigService;
+import me.mapacheee.falloutcore.shared.config.Config;
+import me.mapacheee.falloutcore.shared.config.Messages;
 import me.mapacheee.falloutcore.shared.util.MessageUtil;
 import org.bukkit.entity.Player;
 import org.incendo.cloud.annotations.Argument;
@@ -21,32 +23,46 @@ public final class FactionCommand {
     private final Logger logger;
     private final FactionService factionService;
     private final MessageUtil messageUtil;
-    private final ConfigService configService;
+    private final Container<Config> configContainer;
+    private final Container<Messages> messagesContainer;
 
     @Inject
     public FactionCommand(Logger logger, FactionService factionService, MessageUtil messageUtil,
-                         ConfigService configService) {
+                         Container<Config> configContainer, Container<Messages> messagesContainer) {
         this.logger = logger;
         this.factionService = factionService;
         this.messageUtil = messageUtil;
-        this.configService = configService;
+        this.configContainer = configContainer;
+        this.messagesContainer = messagesContainer;
+    }
+
+    private Config config() {
+        return configContainer.get();
+    }
+
+    private Messages messages() {
+        return messagesContainer.get();
     }
 
     @Command("create <name> <alias>")
-    @Permission("falloutcore.faction.admin")
     public void handleCreateFaction(Source sender, @Argument("name") String name, @Argument("alias") String alias) {
-        if (configService.getConfig().faction().adminOnlyCreate() && !sender.source().hasPermission("falloutcore.faction.admin")) {
-            messageUtil.sendNoPermissionMessage(sender.source());
+        if (!(sender.source() instanceof Player player)) {
+            messageUtil.sendMessage(sender.source(), messages().general().playersOnly());
             return;
         }
 
-        if (name.length() > configService.getConfig().faction().maxNameLength()) {
-            messageUtil.sendFactionNameTooLongMessage(sender.source(), configService.getConfig().faction().maxNameLength());
+        if (config().faction().adminOnlyCreate() && !player.hasPermission("falloutcore.faction.admin")) {
+            messageUtil.sendNoPermissionMessage(player);
             return;
         }
 
-        if (alias.length() > configService.getConfig().faction().maxAliasLength()) {
-            messageUtil.sendFactionAliasTooLongMessage(sender.source(), configService.getConfig().faction().maxAliasLength());
+        if (name.length() > config().faction().maxNameLength()) {
+            messageUtil.sendFactionNameTooLongMessage(player, config().faction().maxNameLength());
+            return;
+        }
+
+        if (alias.length() > config().faction().maxAliasLength()) {
+            messageUtil.sendFactionAliasTooLongMessage(player, config().faction().maxAliasLength());
             return;
         }
 
@@ -57,7 +73,7 @@ public final class FactionCommand {
             if (factionService.factionExists(name)) {
                 messageUtil.sendFactionAlreadyExistsMessage(sender.source(), name);
             } else {
-                messageUtil.sendMaxFactionsReachedMessage(sender.source(), configService.getConfig().faction().maxFactions());
+                messageUtil.sendMaxFactionsReachedMessage(sender.source(), config().faction().maxFactions());
             }
         }
     }
@@ -76,7 +92,7 @@ public final class FactionCommand {
     @Command("join <faction>")
     public void handleJoinFaction(Source sender, @Argument("faction") String factionName) {
         if (!(sender.source() instanceof Player player)) {
-            messageUtil.sendMessage(sender.source(), configService.getMessages().general().playersOnly());
+            messageUtil.sendMessage(sender.source(), messages().general().playersOnly());
             return;
         }
 
@@ -218,7 +234,7 @@ public final class FactionCommand {
     }
     private Player validatePlayerSender(Source sender) {
         if (!(sender.source() instanceof Player player)) {
-            messageUtil.sendMessage(sender.source(), configService.getMessages().general().playersOnly());
+            messageUtil.sendMessage(sender.source(), messages().general().playersOnly());
             return null;
         }
         return player;

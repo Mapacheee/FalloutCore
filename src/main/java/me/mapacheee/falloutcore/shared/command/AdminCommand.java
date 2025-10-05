@@ -2,8 +2,9 @@ package me.mapacheee.falloutcore.shared.command;
 
 import com.google.inject.Inject;
 import com.thewinterframework.command.CommandComponent;
-import com.thewinterframework.service.ReloadServiceManager;
-import me.mapacheee.falloutcore.shared.config.ConfigService;
+import com.thewinterframework.configurate.Container;
+import me.mapacheee.falloutcore.shared.config.Config;
+import me.mapacheee.falloutcore.shared.config.Messages;
 import me.mapacheee.falloutcore.shared.util.MessageUtil;
 import org.bukkit.entity.Player;
 import org.incendo.cloud.annotations.Command;
@@ -17,16 +18,17 @@ import org.slf4j.Logger;
 public final class AdminCommand {
 
     private final Logger logger;
-    private final ConfigService configService;
     private final MessageUtil messageUtil;
-    private final ReloadServiceManager reloadServiceManager;
+    private final Container<Config> configContainer;
+    private final Container<Messages> messagesContainer;
 
     @Inject
-    public AdminCommand(Logger logger, ConfigService configService, MessageUtil messageUtil, ReloadServiceManager reloadServiceManager) {
+    public AdminCommand(Logger logger, MessageUtil messageUtil,
+                       Container<Config> configContainer, Container<Messages> messagesContainer) {
         this.logger = logger;
-        this.configService = configService;
         this.messageUtil = messageUtil;
-        this.reloadServiceManager = reloadServiceManager;
+        this.configContainer = configContainer;
+        this.messagesContainer = messagesContainer;
     }
 
     @Command("reload")
@@ -35,7 +37,9 @@ public final class AdminCommand {
         long startTime = System.currentTimeMillis();
 
         try {
-            reloadServiceManager.reload();
+            // Recargar configuraciones usando los containers
+            configContainer.reload();
+            messagesContainer.reload();
 
             long endTime = System.currentTimeMillis();
             long duration = endTime - startTime;
@@ -43,18 +47,18 @@ public final class AdminCommand {
             if (sender.source() instanceof Player player) {
                 messageUtil.sendReloadSuccessMessage(player, duration);
             } else {
-                messageUtil.sendMessage(sender.source(), "&aConfig recargada en " + duration + "ms");
+                messageUtil.sendMessage(sender.source(), "&aConfiguración recargada correctamente en " + duration + "ms");
             }
 
             logger.info("Configuraciones recargadas por {} en {}ms", sender.source().getName(), duration);
 
         } catch (Exception e) {
-            logger.error("error al recargar configs", e);
+            logger.error("Error al recargar configuraciones", e);
 
             if (sender.source() instanceof Player player) {
                 messageUtil.sendReloadErrorMessage(player);
             } else {
-                messageUtil.sendMessage(sender.source(), "&cerror al recargar configs.");
+                messageUtil.sendMessage(sender.source(), "&cError al recargar las configuraciones. Revisa la consola para más detalles.");
             }
         }
     }
@@ -66,7 +70,7 @@ public final class AdminCommand {
             messageUtil.sendVersionMessage(player);
         } else {
             messageUtil.sendMessage(sender.source(),
-                "&6FalloutCore plugin version: &e" + configService.getPluginVersion());
+                "&6FalloutCore plugin version: &e1.0-SNAPSHOT");
         }
     }
 }

@@ -2,8 +2,10 @@ package me.mapacheee.falloutcore.radiation.command;
 
 import com.google.inject.Inject;
 import com.thewinterframework.command.CommandComponent;
+import com.thewinterframework.configurate.Container;
 import me.mapacheee.falloutcore.radiation.entity.RadiationService;
-import me.mapacheee.falloutcore.shared.config.ConfigService;
+import me.mapacheee.falloutcore.shared.config.Config;
+import me.mapacheee.falloutcore.shared.config.Messages;
 import me.mapacheee.falloutcore.shared.util.MessageUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -21,42 +23,50 @@ public final class RadiationCommand {
     private final Logger logger;
     private final RadiationService radiationService;
     private final MessageUtil messageUtil;
-    private final ConfigService configService;
+    private final Container<Config> configContainer;
+    private final Container<Messages> messagesContainer;
 
     @Inject
     public RadiationCommand(Logger logger, RadiationService radiationService, MessageUtil messageUtil,
-                           ConfigService configService) {
+                           Container<Config> configContainer, Container<Messages> messagesContainer) {
         this.logger = logger;
         this.radiationService = radiationService;
         this.messageUtil = messageUtil;
-        this.configService = configService;
+        this.configContainer = configContainer;
+        this.messagesContainer = messagesContainer;
+    }
+
+    private Config config() {
+        return configContainer.get();
+    }
+
+    private Messages messages() {
+        return messagesContainer.get();
     }
 
     @Command("info")
     public void handleRadiationInfo(Source sender) {
         if (!(sender.source() instanceof Player player)) {
-            messageUtil.sendMessage(sender.source(), configService.getMessages().general().playersOnly());
+            messageUtil.sendMessage(sender.source(), messages().general().playersOnly());
             return;
         }
 
         messageUtil.sendRadiationSystemStatusMessage(player);
         messageUtil.sendRadiationCurrentLevelMessage(player,
             radiationService.getCurrentRadiationLevel(),
-            configService.getConfig().radiation().maxLevel());
+            config().radiation().maxLevel());
         messageUtil.sendRadiationHeightMessage(player, radiationService.getCurrentRadiationHeight());
         messageUtil.sendRadiationPlayersCountMessage(player, getPlayersInRadiationCount());
 
-        String status = configService.getConfig().radiation().enabled() ?
-            configService.getMessages().radiation().systemEnabled() :
-            configService.getMessages().radiation().systemDisabled();
+        String status = config().radiation().enabled() ? "Habilitado" : "Deshabilitado";
         messageUtil.sendRadiationSystemStateMessage(player, status);
     }
 
     @Command("setlevel <level>")
     @Permission("falloutcore.radiation.admin")
     public void handleSetLevel(Source sender, @Argument("level") int level) {
-        int minLevel = configService.getConfig().radiation().minLevel();
-        int maxLevel = configService.getConfig().radiation().maxLevel();
+        int minLevel = config().radiation().minLevel();
+        int maxLevel = config().radiation().maxLevel();
 
         if (level < minLevel || level > maxLevel) {
             if (sender.source() instanceof Player player) {
@@ -75,7 +85,6 @@ public final class RadiationCommand {
             messageUtil.sendMessage(sender.source(), "Nivel de radiación establecido a: " + level);
         }
 
-        // Notificar a jugadores en radiación del cambio de nivel
         for (Player player : Bukkit.getOnlinePlayers()) {
             if (radiationService.isPlayerInRadiation(player)) {
                 messageUtil.sendRadiationLevelChangedMessage(player, level,
@@ -140,7 +149,7 @@ public final class RadiationCommand {
     public void handleImmunityInfo(Source sender, @Argument("player") Player target) {
         if (target != null && !target.equals(sender.source()) &&
             !sender.source().hasPermission("falloutcore.radiation.admin")) {
-            messageUtil.sendMessage(sender.source(), configService.getMessages().general().noPermission());
+            messageUtil.sendMessage(sender.source(), messages().general().noPermission());
             return;
         }
 

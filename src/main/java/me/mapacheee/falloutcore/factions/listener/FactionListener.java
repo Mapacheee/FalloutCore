@@ -1,9 +1,10 @@
 package me.mapacheee.falloutcore.factions.listener;
 
 import com.google.inject.Inject;
+import com.thewinterframework.configurate.Container;
 import com.thewinterframework.paper.listener.ListenerComponent;
 import me.mapacheee.falloutcore.factions.entity.FactionService;
-import me.mapacheee.falloutcore.shared.config.ConfigService;
+import me.mapacheee.falloutcore.shared.config.Config;
 import me.mapacheee.falloutcore.shared.util.MessageUtil;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -15,13 +16,17 @@ public class FactionListener implements Listener {
 
     private final FactionService factionService;
     private final MessageUtil messageUtil;
-    private final ConfigService configService;
+    private final Container<Config> configContainer;
 
     @Inject
-    public FactionListener(FactionService factionService, MessageUtil messageUtil, ConfigService configService) {
+    public FactionListener(FactionService factionService, MessageUtil messageUtil, Container<Config> configContainer) {
         this.factionService = factionService;
         this.messageUtil = messageUtil;
-        this.configService = configService;
+        this.configContainer = configContainer;
+    }
+
+    private Config config() {
+        return configContainer.get();
     }
 
     @EventHandler
@@ -30,7 +35,11 @@ public class FactionListener implements Listener {
             return;
         }
 
-        if (configService.getConfig().faction().enableFriendlyFire()) {
+        if (!config().faction().enabled()) {
+            return;
+        }
+
+        if (config().faction().enableFriendlyFire()) {
             return;
         }
 

@@ -1,11 +1,12 @@
 package me.mapacheee.falloutcore.radiation.entity;
 
 import com.google.inject.Inject;
+import com.thewinterframework.configurate.Container;
 import com.thewinterframework.service.annotation.Service;
 import com.thewinterframework.service.annotation.lifecycle.OnDisable;
 import com.thewinterframework.service.annotation.lifecycle.OnEnable;
 import me.mapacheee.falloutcore.shared.config.Config;
-import me.mapacheee.falloutcore.shared.config.ConfigService;
+import me.mapacheee.falloutcore.shared.config.Messages;
 import me.mapacheee.falloutcore.shared.util.MessageUtil;
 import me.mapacheee.falloutcore.shared.effects.EffectsService;
 import me.mapacheee.falloutcore.radiation.event.RadiationLevelChangeEvent;
@@ -34,7 +35,8 @@ import java.util.concurrent.ThreadLocalRandom;
 public class RadiationService {
 
     private final Logger logger;
-    private final ConfigService configService;
+    private final Container<Config> configContainer;
+    private final Container<Messages> messagesContainer;
     private final MessageUtil messageUtil;
     private final Plugin plugin;
     private final EffectsService effectsService;
@@ -50,18 +52,27 @@ public class RadiationService {
     private BukkitTask levelChangeTask;
 
     @Inject
-    public RadiationService(Logger logger, ConfigService configService, MessageUtil messageUtil,
-                            Plugin plugin, EffectsService effectsService) {
+    public RadiationService(Logger logger, Container<Config> configContainer, Container<Messages> messagesContainer,
+                          MessageUtil messageUtil, Plugin plugin, EffectsService effectsService) {
         this.logger = logger;
-        this.configService = configService;
+        this.configContainer = configContainer;
+        this.messagesContainer = messagesContainer;
         this.messageUtil = messageUtil;
         this.plugin = plugin;
         this.effectsService = effectsService;
     }
 
+    private Config config() {
+        return configContainer.get();
+    }
+
+    private Messages messages() {
+        return messagesContainer.get();
+    }
+
     @OnEnable
     void startRadiationSystem() {
-        if (!configService.getConfig().radiation().enabled()) {
+        if (!config().radiation().enabled()) {
             logger.info("radiacion apagada");
             return;
         }
@@ -100,7 +111,7 @@ public class RadiationService {
     }
 
     private void startLevelChangeTask() {
-        long intervalTicks = configService.getConfig().radiation().changeIntervalMinutes() * 60L * 20L;
+        long intervalTicks = config().radiation().changeIntervalMinutes() * 60L * 20L;
 
         levelChangeTask = new BukkitRunnable() {
             @Override
@@ -120,7 +131,6 @@ public class RadiationService {
 
             if (!enterEvent.isCancelled()) {
                 playersInRadiation.put(player.getUniqueId(), true);
-                // Iniciar efectos visuales de radiación
                 effectsService.startRadiationEffects(player, currentRadiationLevel);
             }
         } else if (!inRadiation && wasInRadiation) {
@@ -139,18 +149,18 @@ public class RadiationService {
     }
 
     private void handleRadiationEffects(Player player) {
-        if (configService.getConfig().radiation().enableSound()) {
+        if (config().radiation().enableSound()) {
             try {
-                String soundTypeName = configService.getConfig().radiation().soundType();
+                String soundTypeName = config().radiation().soundType();
                 Sound sound = Registry.SOUNDS.get(NamespacedKey.minecraft(soundTypeName.toLowerCase().replace("_", ".")));
 
-                float volume = configService.getConfig().radiation().soundVolume();
-                float pitch = configService.getConfig().radiation().soundPitch();
+                float volume = config().radiation().soundVolume();
+                float pitch = config().radiation().soundPitch();
 
                 assert sound != null;
                 player.playSound(player.getLocation(), sound, volume, pitch);
             } catch (IllegalArgumentException e) {
-                logger.warn("Tipo de sonido inválido en config: {}. Usando sonido por defecto.", configService.getConfig().radiation().soundType());
+                logger.warn("Tipo de sonido inválido en config: {}. Usando sonido por defecto.", config().radiation().soundType());
                 player.playSound(player.getLocation(), Sound.AMBIENT_BASALT_DELTAS_ADDITIONS, 0.4f, 1.0f);
             }
         }
@@ -180,7 +190,7 @@ public class RadiationService {
         long lastDamage = lastDamageTime.getOrDefault(playerId, 0L);
 
         if (currentTime - lastDamage > 3000) {
-            double damage = configService.getConfig().radiation().damagePerLevel() * currentRadiationLevel;
+            double damage = config().radiation().damagePerLevel() * currentRadiationLevel;
             player.damage(damage);
             applyRadiationEffects(player);
 
@@ -231,8 +241,8 @@ public class RadiationService {
             player.getInventory().getBoots()
         };
 
-        int minDamage = configService.getConfig().radiation().armorDamageMin();
-        int maxDamage = configService.getConfig().radiation().armorDamageMax();
+        int minDamage = config().radiation().armorDamageMin();
+        int maxDamage = config().radiation().armorDamageMax();
 
         for (int i = 0; i < armor.length; i++) {
             ItemStack piece = armor[i];
@@ -261,7 +271,7 @@ public class RadiationService {
     }
 
     private void applyRadiationEffects(Player player) {
-        int duration = configService.getConfig().radiation().effectDurationSeconds() * 20;
+        int duration = config().radiation().effectDurationSeconds() * 20;
 
         switch (currentRadiationLevel) {
             case 1 -> player.addPotionEffect(new PotionEffect(PotionEffectType.HUNGER, duration, 0));
@@ -296,7 +306,7 @@ public class RadiationService {
         int oldLevel = currentRadiationLevel;
         int oldHeight = currentRadiationHeight;
 
-        Config.RadiationConfig radConfig = configService.getConfig().radiation();
+        Config.RadiationConfig radConfig = config().radiation();
 
         currentRadiationLevel = ThreadLocalRandom.current().nextInt(
             radConfig.minLevel(), radConfig.maxLevel() + 1
@@ -348,8 +358,8 @@ public class RadiationService {
     }
 
     public void forceRadiationLevel(int level) {
-        if (level >= configService.getConfig().radiation().minLevel() && level <= configService.getConfig()
-                    .radiation().maxLevel()) {
+        if (level >= config().radiation().minLevel() && level <= config().radiation()
+                    .maxLevel()) {
             currentRadiationLevel = level;
             logger.info("Nivel de radiación forzado a: {}", level);
         }

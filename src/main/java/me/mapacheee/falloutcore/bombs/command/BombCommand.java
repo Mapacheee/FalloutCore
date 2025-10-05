@@ -2,9 +2,10 @@ package me.mapacheee.falloutcore.bombs.command;
 
 import com.google.inject.Inject;
 import com.thewinterframework.command.CommandComponent;
+import com.thewinterframework.configurate.Container;
 import me.mapacheee.falloutcore.bombs.entity.BombService;
 import me.mapacheee.falloutcore.bombs.entity.NuclearBomb;
-import me.mapacheee.falloutcore.shared.config.ConfigService;
+import me.mapacheee.falloutcore.shared.config.Config;
 import me.mapacheee.falloutcore.shared.util.MessageUtil;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -25,20 +26,24 @@ public final class BombCommand {
     private final Logger logger;
     private final BombService bombService;
     private final MessageUtil messageUtil;
-    private final ConfigService configService;
+    private final Container<Config> configContainer;
 
     @Inject
-    public BombCommand(Logger logger, BombService bombService, MessageUtil messageUtil, ConfigService configService) {
+    public BombCommand(Logger logger, BombService bombService, MessageUtil messageUtil, Container<Config> configContainer) {
         this.logger = logger;
         this.bombService = bombService;
         this.messageUtil = messageUtil;
-        this.configService = configService;
+        this.configContainer = configContainer;
+    }
+
+    private Config config() {
+        return configContainer.get();
     }
 
     @Command("give [player]")
     @Permission("falloutcore.bomb.admin")
     public void handleGiveBomb(Source sender, @Argument("player") Player target) {
-        var bombConfig = configService.getConfig().bomb();
+        var bombConfig = config().bomb();
 
         if (!bombConfig.enabled()) {
             messageUtil.sendBombModuleDisabledMessage(sender.source());
@@ -63,7 +68,7 @@ public final class BombCommand {
                                   @Argument("x") int x,
                                   @Argument("y") int y,
                                   @Argument("z") int z) {
-        var bombConfig = configService.getConfig().bomb();
+        var bombConfig = config().bomb();
 
         if (!bombConfig.enabled()) {
             messageUtil.sendBombModuleDisabledMessage(sender.source());
@@ -158,7 +163,7 @@ public final class BombCommand {
     @Command("info")
     @Permission("falloutcore.bomb.info")
     public void handleBombInfo(Source sender) {
-        var bombConfig = configService.getConfig().bomb();
+        var bombConfig = config().bomb();
         var nuclearConfig = bombConfig.nuclear();
 
         String radiationStatus = nuclearConfig.postRadiation().enabled() ?

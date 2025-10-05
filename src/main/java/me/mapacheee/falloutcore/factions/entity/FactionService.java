@@ -1,9 +1,10 @@
 package me.mapacheee.falloutcore.factions.entity;
 
 import com.google.inject.Inject;
+import com.thewinterframework.configurate.Container;
 import com.thewinterframework.service.annotation.Service;
 import com.thewinterframework.service.annotation.lifecycle.OnEnable;
-import me.mapacheee.falloutcore.shared.config.ConfigService;
+import me.mapacheee.falloutcore.shared.config.Config;
 import me.mapacheee.falloutcore.shared.storage.SQLiteStorage;
 import me.mapacheee.falloutcore.factions.event.FactionCreateEvent;
 import me.mapacheee.falloutcore.factions.event.FactionDeleteEvent;
@@ -19,17 +20,21 @@ import java.util.*;
 @Service
 public class FactionService {
     private final Logger logger;
-    private final ConfigService configService;
+    private final Container<Config> configContainer;
     private final SQLiteStorage storage;
 
     private final Map<String, Faction> factions = new HashMap<>();
     private final Map<UUID, Faction> playerFactions = new HashMap<>();
 
     @Inject
-    public FactionService(Logger logger, ConfigService configService, SQLiteStorage storage) {
+    public FactionService(Logger logger, Container<Config> configContainer, SQLiteStorage storage) {
         this.logger = logger;
-        this.configService = configService;
+        this.configContainer = configContainer;
         this.storage = storage;
+    }
+
+    private Config config() {
+        return configContainer.get();
     }
 
     @OnEnable
@@ -44,7 +49,7 @@ public class FactionService {
             return false;
         }
 
-        if (factions.size() >= configService.getConfig().faction().maxFactions()) {
+        if (factions.size() >= config().faction().maxFactions()) {
             return false;
         }
 
@@ -107,7 +112,7 @@ public class FactionService {
             return false;
         }
 
-        if (faction.getMembers().size() >= configService.getConfig().faction().maxMembersPerFaction()) {
+        if (faction.getMembers().size() >= config().faction().maxMembersPerFaction()) {
             return false;
         }
 

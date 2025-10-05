@@ -1,30 +1,30 @@
 package me.mapacheee.falloutcore.shared.config;
 
 import com.google.inject.Inject;
+import com.thewinterframework.configurate.Container;
 import com.thewinterframework.service.annotation.Service;
-import me.mapacheee.falloutcore.config.Messages;
 import org.slf4j.Logger;
 
 @Service
 public class ConfigService {
 
     private final Logger logger;
-    private final Config config;
-    private final Messages messages;
+    private final Container<Config> configContainer;
+    private final Container<Messages> messagesContainer;
 
     @Inject
-    public ConfigService(Logger logger, Config config, Messages messages) {
+    public ConfigService(Logger logger, Container<Config> configContainer, Container<Messages> messagesContainer) {
         this.logger = logger;
-        this.config = config;
-        this.messages = messages;
+        this.configContainer = configContainer;
+        this.messagesContainer = messagesContainer;
     }
 
     public Config getConfig() {
-        return config;
+        return configContainer.get();
     }
 
     public Messages getMessages() {
-        return messages;
+        return messagesContainer.get();
     }
 
     public String getPluginVersion() {

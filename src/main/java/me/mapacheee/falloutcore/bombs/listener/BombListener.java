@@ -1,9 +1,10 @@
 package me.mapacheee.falloutcore.bombs.listener;
 
 import com.google.inject.Inject;
+import com.thewinterframework.configurate.Container;
 import com.thewinterframework.paper.listener.ListenerComponent;
 import me.mapacheee.falloutcore.bombs.entity.BombService;
-import me.mapacheee.falloutcore.shared.config.ConfigService;
+import me.mapacheee.falloutcore.shared.config.Config;
 import me.mapacheee.falloutcore.shared.util.MessageUtil;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -21,19 +22,23 @@ public class BombListener implements Listener {
     private final Logger logger;
     private final BombService bombService;
     private final MessageUtil messageUtil;
-    private final ConfigService configService;
+    private final Container<Config> configContainer;
 
     @Inject
-    public BombListener(Logger logger, BombService bombService, MessageUtil messageUtil, ConfigService configService) {
+    public BombListener(Logger logger, BombService bombService, MessageUtil messageUtil, Container<Config> configContainer) {
         this.logger = logger;
         this.bombService = bombService;
         this.messageUtil = messageUtil;
-        this.configService = configService;
+        this.configContainer = configContainer;
+    }
+
+    private Config config() {
+        return configContainer.get();
     }
 
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
-        if (!configService.getConfig().bomb().enabled()) {
+        if (!config().bomb().enabled()) {
             return;
         }
 

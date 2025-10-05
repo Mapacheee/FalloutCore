@@ -515,8 +515,8 @@ public class EffectsService {
                     // Columna del hongo
                     for (int y = 0; y < height; y += 3) {
                         for (int i = 0; i < particleCount / 4; i++) {
-                            double angle = (Math.PI * 2 * i) / (particleCount / 4);
-                            double radius = columnRadius * (1.0 - (double) y / height * 0.7); // Se estrecha hacia arriba
+                            double angle = (Math.PI * 2 * i) / ((double) particleCount / 4);
+                            double radius = columnRadius * (1.0 - (double) y / height * 0.7);
 
                             double x = Math.cos(angle) * radius + (Math.random() - 0.5) * 2;
                             double z = Math.sin(angle) * radius + (Math.random() - 0.5) * 2;

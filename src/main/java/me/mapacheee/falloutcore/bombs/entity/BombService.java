@@ -1,10 +1,11 @@
 package me.mapacheee.falloutcore.bombs.entity;
 
 import com.google.inject.Inject;
+import com.thewinterframework.configurate.Container;
 import com.thewinterframework.service.annotation.Service;
 import com.thewinterframework.service.annotation.lifecycle.OnDisable;
 import com.thewinterframework.service.annotation.lifecycle.OnEnable;
-import me.mapacheee.falloutcore.shared.config.ConfigService;
+import me.mapacheee.falloutcore.shared.config.Config;
 import me.mapacheee.falloutcore.shared.util.MessageUtil;
 import me.mapacheee.falloutcore.shared.effects.EffectsService;
 import me.mapacheee.falloutcore.radiation.entity.RadiationService;
@@ -30,7 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class BombService {
 
     private final Logger logger;
-    private final ConfigService configService;
+    private final Container<Config> configContainer;
     private final MessageUtil messageUtil;
     private final EffectsService effectsService;
     private final RadiationService radiationService;
@@ -41,19 +42,23 @@ public class BombService {
     private BukkitTask timerTask;
 
     @Inject
-    public BombService(Logger logger, ConfigService configService, MessageUtil messageUtil,
-                      EffectsService effectsService, RadiationService radiationService, Plugin plugin) {
+    public BombService(Logger logger, Container<Config> configContainer, MessageUtil messageUtil,
+                       EffectsService effectsService, RadiationService radiationService, Plugin plugin) {
         this.logger = logger;
-        this.configService = configService;
+        this.configContainer = configContainer;
         this.messageUtil = messageUtil;
         this.effectsService = effectsService;
         this.radiationService = radiationService;
         this.plugin = plugin;
     }
 
+    private Config config() {
+        return configContainer.get();
+    }
+
     @OnEnable
     void initialize() {
-        if (!configService.getConfig().bomb().enabled()) {
+        if (!config().bomb().enabled()) {
             logger.info("bombas no activadas");
             return;
         }
@@ -78,7 +83,7 @@ public class BombService {
         ItemStack bombItem = messageUtil.createBombItem();
 
         if (bombItem.getItemMeta() instanceof SkullMeta meta) {
-            String headSkin = configService.getConfig().bomb().nuclear().headSkin();
+            String headSkin = config().bomb().nuclear().headSkin();
             if (headSkin != null && !headSkin.isEmpty()) {
                 applyCustomSkin(meta, headSkin);
                 bombItem.setItemMeta(meta);
@@ -101,11 +106,11 @@ public class BombService {
     }
 
     public boolean canPlayerUseBomb(Player player) {
-        if (!configService.getConfig().bomb().enabled()) {
+        if (!config().bomb().enabled()) {
             return false;
         }
 
-        String permission = configService.getConfig().bomb().nuclear().requiredPermission();
+        String permission = config().bomb().nuclear().requiredPermission();
         if (!player.hasPermission(permission)) {
             return false;
         }
@@ -125,7 +130,7 @@ public class BombService {
             return false;
         }
 
-        int countdownSeconds = configService.getConfig().bomb().nuclear().timer().countdownSeconds();
+        int countdownSeconds = config().bomb().nuclear().timer().countdownSeconds();
         NuclearBomb bomb = new NuclearBomb(location, player, countdownSeconds);
 
         BombDetonateEvent event = new BombDetonateEvent(bomb, player);
@@ -144,13 +149,13 @@ public class BombService {
     }
 
     private void applyCooldown(Player player) {
-        int cooldownSeconds = configService.getConfig().bomb().nuclear().cooldownSeconds();
+        int cooldownSeconds = config().bomb().nuclear().cooldownSeconds();
         long cooldownEnd = System.currentTimeMillis() + (cooldownSeconds * 1000L);
         playerCooldowns.put(player.getUniqueId(), cooldownEnd);
     }
 
     private boolean isLocationProtected(Location location) {
-        if (!configService.getConfig().bomb().respectWorldGuard()) {
+        if (!config().bomb().respectWorldGuard()) {
             return false;
         }
 
@@ -183,7 +188,7 @@ public class BombService {
     }
 
     private void sendCountdownEffects(NuclearBomb bomb, int secondsLeft) {
-        var timerConfig = configService.getConfig().bomb().nuclear().timer();
+        var timerConfig = config().bomb().nuclear().timer();
 
         if (!timerConfig.enabled()) {
             return;
@@ -235,7 +240,7 @@ public class BombService {
             }
 
             ExplosionTask explosionTask = new ExplosionTask(
-                logger, bomb, configService.getConfig().bomb().nuclear(),
+                logger, bomb, config().bomb().nuclear(),
                 effectsService, radiationService
             );
 

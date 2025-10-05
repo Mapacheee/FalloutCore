@@ -1,10 +1,11 @@
 package me.mapacheee.falloutcore.shared.storage;
 
 import com.google.inject.Inject;
+import com.thewinterframework.configurate.Container;
 import com.thewinterframework.service.annotation.Service;
 import com.thewinterframework.service.annotation.lifecycle.OnEnable;
 import me.mapacheee.falloutcore.factions.entity.Faction;
-import me.mapacheee.falloutcore.shared.config.ConfigService;
+import me.mapacheee.falloutcore.shared.config.Config;
 import me.mapacheee.falloutcore.shared.util.DatabaseUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -21,16 +22,20 @@ import java.util.UUID;
 public class SQLiteStorage {
 
     private final Logger logger;
-    private final ConfigService configService;
+    private final Container<Config> configContainer;
     private final Plugin plugin;
     private final DatabaseUtils databaseUtils;
 
     @Inject
-    public SQLiteStorage(Logger logger, ConfigService configService, Plugin plugin, DatabaseUtils databaseUtils) {
+    public SQLiteStorage(Logger logger, Container<Config> configContainer, Plugin plugin, DatabaseUtils databaseUtils) {
         this.logger = logger;
-        this.configService = configService;
+        this.configContainer = configContainer;
         this.plugin = plugin;
         this.databaseUtils = databaseUtils;
+    }
+
+    private Config config() {
+        return configContainer.get();
     }
 
     @OnEnable

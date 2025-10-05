@@ -7,7 +7,7 @@ import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 @Configurate("messages")
 public record Messages(
     General general,
-    Factions factions,
+    Faction faction,
     Radiation radiation,
     Bombs bombs
 ) {
@@ -23,41 +23,47 @@ public record Messages(
     ) {}
 
     @ConfigSerializable
-    public record Factions(
-        String helpMessage,
-        String adminHelpMessage,
-        String createUsage,
+    public record Faction(
         String factionCreated,
+        String factionDeleted,
+        String playerJoined,
+        String playerLeft,
+        String factionNotFound,
+        String alreadyInFaction,
+        String notInFaction,
+        String noPermission,
+        String factionInfo,
         String factionAlreadyExists,
         String maxFactionsReached,
+        String factionFull,
         String nameToolong,
         String aliasToolong,
-        String deleteUsage,
-        String factionDeleted,
-        String factionNotFound,
-        String joinUsage,
-        String joinedFaction,
-        String alreadyInFaction,
-        String factionFull,
-        String notInFaction,
-        String forceJoinUsage,
         String playerForceJoined,
         String forceJoinedNotification,
-        String kickUsage,
+        String playerNotInFaction,
         String playerKicked,
         String kickedNotification,
-        String playerNotInFaction,
-        String setAliasUsage,
         String aliasChanged,
-        String factionInfo,
+        String noFactionsExist,
         String factionListHeader,
         String factionListItem,
-        String noFactionsExist,
-        String leftFaction,
-        String friendlyFireBlocked,
-        String noPermission,
-        String playersOnly,
-        String playerNotFound
+        String baseSet,
+        String baseNotSet,
+        String baseTeleported,
+        String baseSetOther,
+        String tpaRequestSent,
+        String tpaRequestReceived,
+        String tpaNoRequests,
+        String tpaRequestAccepted,
+        String tpaRequestDenied,
+        String tpaRequestAcceptedSender,
+        String tpaRequestDeniedSender,
+        String tpaRequestExpired,
+        String tpaNotSameFaction,
+        String tpaSelfRequest,
+        String tpaPlayerOffline,
+        String tpaAlreadyHasRequest,
+        String friendlyFire
     ) {}
 
     @ConfigSerializable
@@ -66,12 +72,10 @@ public record Messages(
         String exitRadiation,
         String levelChanged,
         String armorProtection,
-        String armorDegrading,
-        String takingDamage,
         String radiationDamageTitle,
         String radiationDamageSubtitle,
-        String immuneMessage,
-        String unknownSubcommand,
+        String radiationArmorTitle,
+        String radiationArmorSubtitle,
         String systemStatus,
         String currentLevel,
         String radiationHeight,
@@ -79,13 +83,10 @@ public record Messages(
         String systemEnabled,
         String systemDisabled,
         String systemState,
-        String levelSetUsage,
         String levelSet,
         String levelOutOfRange,
-        String heightSetUsage,
         String heightSet,
         String heightOutOfRange,
-        String invalidNumber,
         String specifyPlayerConsole,
         String playerStatusHeader,
         String inRadiationStatus,
@@ -97,17 +98,17 @@ public record Messages(
         String inRadiationNo,
         String immuneTrue,
         String immuneFalse,
-        String currentHeight,
         String playerImmune,
         String playerNotImmune,
         String immunityInstructions,
-        String helpHeader,
-        String helpInfo,
-        String helpCheck,
-        String helpImmunity,
-        String adminHelpHeader,
-        String adminHelpSetLevel,
-        String adminHelpSetHeight
+        String enterTitle,
+        String enterSubtitle,
+        String damageTitle,
+        String damageSubtitle,
+        String exitTitle,
+        String exitSubtitle,
+        String armorProtectionTitle,
+        String armorProtectionSubtitle
     ) {}
 
     @ConfigSerializable
@@ -132,10 +133,10 @@ public record Messages(
         String cooldownInfo,
         String cooldownExpired,
         String bombItemName,
-        String bombItemLore,
         String bombGivenToPlayer,
         String bombInfo,
         String bombListItem,
-        String playersOnlyCommand
+        String playersOnlyCommand,
+        String bombItemLore
     ) {}
 }
