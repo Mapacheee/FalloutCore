@@ -3,13 +3,13 @@ package me.mapacheee.falloutcore.shared.config;
 import com.thewinterframework.configurate.config.Configurate;
 import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 
-@ConfigSerializable
-@Configurate("config")
-public record Config(
-    FactionConfig faction,
-    RadiationConfig radiation,
-    DatabaseConfig database
-) {
+    @ConfigSerializable
+    @Configurate("config")
+    public record Config(
+            FactionConfig faction,
+            RadiationConfig radiation,
+            BombConfig bomb
+    ) {
 
     @ConfigSerializable
     public record FactionConfig(
@@ -43,13 +43,102 @@ public record Config(
     ) {}
 
     @ConfigSerializable
-    public record DatabaseConfig(
-        String type,
-        String host,
-        int port,
-        String database,
-        String username,
-        String password,
-        String tablePrefix
+    public record BombConfig(
+        boolean enabled,
+        NuclearConfig nuclear,
+        boolean respectWorldGuard,
+        boolean onlyGlobalRegion
+    ) {}
+
+    @ConfigSerializable
+    public record NuclearConfig(
+        int maxRadius,
+        int craterDepth,
+        int explosionDurationSeconds,
+        String headSkin,
+        TimerConfig timer,
+        ExplosionPhasesConfig phases,
+        MushroomConfig mushroom,
+        ScreenEffectsConfig screenEffects,
+        PostRadiationConfig postRadiation,
+        String requiredPermission,
+        int cooldownSeconds
+    ) {}
+
+    @ConfigSerializable
+    public record TimerConfig(
+        boolean enabled,
+        int countdownSeconds,
+        String titleMessage,
+        String subtitleMessage,
+        String soundType,
+        float soundVolume,
+        float soundPitch
+    ) {}
+
+    @ConfigSerializable
+    public record ExplosionPhasesConfig(
+        DetonationPhase detonation,
+        FireballPhase fireball,
+        ShockwavePhase shockwave
+    ) {}
+
+    @ConfigSerializable
+    public record DetonationPhase(
+        int durationSeconds,
+        boolean flashEffect,
+        float soundVolume,
+        String soundType
+    ) {}
+
+    @ConfigSerializable
+    public record FireballPhase(
+        int durationSeconds,
+        int expansionSpeed,
+        boolean fireParticles,
+        String particleType
+    ) {}
+
+    @ConfigSerializable
+    public record ShockwavePhase(
+        int durationSeconds,
+        int expansionSpeed,
+        java.util.List<DestructionLayer> destructionLayers
+    ) {}
+
+    @ConfigSerializable
+    public record DestructionLayer(
+        int radius,
+        String material,
+        double destructionChance
+    ) {}
+
+    @ConfigSerializable
+    public record MushroomConfig(
+        boolean enabled,
+        int height,
+        int durationSeconds,
+        int columnRadius,
+        int headRadius,
+        int particleCount,
+        String particleType
+    ) {}
+
+    @ConfigSerializable
+    public record ScreenEffectsConfig(
+        boolean flash,
+        boolean shake,
+        boolean distortion,
+        boolean radioactiveOverlay,
+        int durationSeconds
+    ) {}
+
+    @ConfigSerializable
+    public record PostRadiationConfig(
+        boolean enabled,
+        int radiationLevel,
+        int durationMinutes,
+        int affectedRadius,
+        boolean gradualDecrease
     ) {}
 }

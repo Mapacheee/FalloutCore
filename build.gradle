@@ -10,15 +10,13 @@ version = '1.0'
 
 repositories {
     mavenCentral()
-    maven { url 'https://jitpack.io' }
+    maven { url = 'https://jitpack.io' }
     maven { url = uri("https://repo.codemc.io/repository/maven-releases/") }
     maven { url = uri("https://repo.codemc.io/repository/maven-snapshots/") }
     maven { url = 'https://repository.minebench.de/' }
     maven { url = 'https://repo.extendedclip.com/releases/' }
-    maven {
-        name = "papermc-repo"
-        url = "https://repo.papermc.io/repository/maven-public/"
-    }
+    maven { url = 'https://repo.papermc.io/repository/maven-public/'}
+    maven { url = 'https://maven.enginehub.org/repo/'}
     maven {
         name = "sonatype"
         url = "https://oss.sonatype.org/content/groups/public/"
@@ -37,6 +35,10 @@ dependencies {
     compileOnly 'com.github.retrooper:packetevents-spigot:2.9.5'
     compileOnly("io.papermc.paper:paper-api:1.21.9-R0.1-SNAPSHOT")
     compileOnly 'me.clip:placeholderapi:2.11.6'
+
+    implementation(platform("com.intellectualsites.bom:bom-newest:1.55"))
+    compileOnly("com.fastasyncworldedit:FastAsyncWorldEdit-Core")
+    compileOnly("com.fastasyncworldedit:FastAsyncWorldEdit-Bukkit")
 }
 
 tasks {

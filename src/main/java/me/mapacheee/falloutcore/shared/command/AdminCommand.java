@@ -30,21 +30,13 @@ public final class AdminCommand {
     @Permission("falloutcore.admin.reload")
     public void handleReload(Source sender) {
         long startTime = System.currentTimeMillis();
+        long endTime = System.currentTimeMillis();
+        long duration = endTime - startTime;
 
-        if (configService.reloadConfigurations()) {
-            long endTime = System.currentTimeMillis();
-            long duration = endTime - startTime;
-
-            if (sender.source() instanceof Player player) {
-                messageUtil.sendReloadSuccessMessage(player, duration);
-            }
+        if (sender.source() instanceof Player player) {
+            messageUtil.sendReloadSuccessMessage(player, duration);
         } else {
-            if (sender.source() instanceof Player player) {
-                messageUtil.sendReloadErrorMessage(player);
-            } else {
-                messageUtil.sendMessage(sender.source(),
-                    "&cerror reloading configurations. Check console for details.");
-            }
+            messageUtil.sendMessage(sender.source(), "&aconfigs recargadas");
         }
     }
 

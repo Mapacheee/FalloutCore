@@ -25,6 +25,73 @@ radiation:
   armor-damage-min: 1
   armor-damage-max: 3
 
+bomb:
+  enabled: true
+  respect-world-guard: true
+  only-global-region: true
+  nuclear:
+    max-radius: 100
+    crater-depth: 25
+    explosion-duration-seconds: 30
+    head-skin: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNWU2YjIwZjY4MTQyNDUyYzRkN2JkNzNiNTgwNjQ4NzQwYzI3ZGIyOTMxODVhM2IyOGM0YzJhNmE2MmY4YmEwIn19fQ=="
+    timer:
+      enabled: true
+      countdown-seconds: 10
+      title-message: "&c&l¡BOMBA NUCLEAR ACTIVADA!"
+      subtitle-message: "&7Detonación en <seconds> segundos"
+      sound-type: "ENTITY_WITHER_AMBIENT"
+      sound-volume: 1.0
+      sound-pitch: 0.5
+    phases:
+      detonation:
+        duration-seconds: 2
+        flash-effect: true
+        sound-volume: 2.0
+        sound-type: "ENTITY_LIGHTNING_BOLT_THUNDER"
+      fireball:
+        duration-seconds: 3
+        expansion-speed: 3
+        fire-particles: true
+        particle-type: "FLAME"
+      shockwave:
+        duration-seconds: 10
+        expansion-speed: 5
+        destruction-layers:
+          - radius: 20
+            material: "AIR"
+            destruction-chance: 1.0
+          - radius: 50
+            material: "GLASS"
+            destruction-chance: 0.8
+          - radius: 80
+            material: "COBBLESTONE"
+            destruction-chance: 0.5
+          - radius: 100
+            material: "RANDOM_DAMAGE"
+            destruction-chance: 0.3
+    mushroom:
+      enabled: true
+      height: 150
+      duration-seconds: 120
+      column-radius: 8
+      head-radius: 25
+      particle-count: 50
+      particle-type: "LARGE_SMOKE"
+    screen-effects:
+      flash: true
+      shake: true
+      distortion: true
+      radioactive-overlay: true
+      duration-seconds: 10
+    post-radiation:
+      enabled: true
+      radiation-level: 10
+      duration-minutes: 30
+      affected-radius: 150
+      gradual-decrease: true
+    required-permission: "falloutcore.bomb.nuclear"
+    cooldown-seconds: 300
+
 database:
   type: "sqlite"
   host: "localhost"

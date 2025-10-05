@@ -2,10 +2,17 @@ package me.mapacheee.falloutcore.shared.util;
 
 import com.google.inject.Inject;
 import com.thewinterframework.service.annotation.Service;
-import me.mapacheee.falloutcore.config.Messages;
 import me.mapacheee.falloutcore.shared.config.ConfigService;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.kyori.adventure.title.Title;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+
+import java.time.Duration;
+import java.util.List;
+
 
 @Service
 public class MessageUtil {
@@ -19,7 +26,8 @@ public class MessageUtil {
 
     public void sendMessage(CommandSender sender, String message) {
         String prefixed = configService.getMessages().general().prefix() + " " + message;
-        sender.sendMessage(colorize(prefixed));
+        Component component = colorizeToComponent(prefixed);
+        sender.sendMessage(component);
     }
 
     public void sendMessage(Player player, String message) {
@@ -27,7 +35,20 @@ public class MessageUtil {
     }
 
     public void sendTitle(Player player, String title, String subtitle) {
-        player.sendTitle(colorize(title), colorize(subtitle), 10, 20, 10);
+        Component titleComponent = colorizeToComponent(title);
+        Component subtitleComponent = colorizeToComponent(subtitle);
+
+        Title adventureTitle = Title.title(
+                titleComponent,
+                subtitleComponent,
+                Title.Times.times(
+                        Duration.ofMillis(500),
+                        Duration.ofSeconds(1),
+                        Duration.ofMillis(500)
+                )
+        );
+
+        player.showTitle(adventureTitle);
     }
 
     public void sendRadiationEnterMessage(Player player, int level) {
@@ -216,8 +237,8 @@ public class MessageUtil {
 
     public void sendRadiationInRadiationStatusMessage(Player player, boolean inRadiation) {
         String status = inRadiation ?
-            configService.getMessages().radiation().inRadiationYes() :
-            configService.getMessages().radiation().inRadiationNo();
+                configService.getMessages().radiation().inRadiationYes() :
+                configService.getMessages().radiation().inRadiationNo();
         String message = configService.getMessages().radiation().inRadiationStatus()
                 .replace("<status>", status);
         sendMessage(player, message);
@@ -225,8 +246,8 @@ public class MessageUtil {
 
     public void sendRadiationImmuneStatusMessage(Player player, boolean isImmune) {
         String status = isImmune ?
-            configService.getMessages().radiation().immuneTrue() :
-            configService.getMessages().radiation().immuneFalse();
+                configService.getMessages().radiation().immuneTrue() :
+                configService.getMessages().radiation().immuneFalse();
         String message = configService.getMessages().radiation().immuneStatus()
                 .replace("<status>", status);
         sendMessage(player, message);
@@ -447,10 +468,92 @@ public class MessageUtil {
     private String getVersion() {
         try {
             return getClass().getPackage().getImplementationVersion() != null ?
-                   getClass().getPackage().getImplementationVersion() : "1.0-SNAPSHOT";
+                    getClass().getPackage().getImplementationVersion() : "1.0-SNAPSHOT";
         } catch (Exception e) {
             return "1.0";
         }
+    }
+
+    public void sendBombModuleDisabledMessage(CommandSender sender) {
+        String message = configService.getMessages().bombs().moduleDisabled();
+        sendMessage(sender, message);
+    }
+
+    public void sendBombGivenMessage(Player player) {
+        String message = configService.getMessages().bombs().bombGiven();
+        sendMessage(player, message);
+    }
+
+    public void sendBombActivatedMessage(Player player) {
+        String message = configService.getMessages().bombs().bombActivated();
+        sendMessage(player, message);
+    }
+
+    public void sendBombActivationFailedMessage(Player player) {
+        String message = configService.getMessages().bombs().bombActivationFailed();
+        sendMessage(player, message);
+    }
+
+    public void sendBombConfirmationMessage(Player player) {
+        String message = configService.getMessages().bombs().bombConfirmation();
+        sendMessage(player, message);
+    }
+
+    public void sendBombCooldownMessage(Player player, long seconds) {
+        String message = configService.getMessages().bombs().bombCooldown()
+                .replace("<seconds>", String.valueOf(seconds));
+        sendMessage(player, message);
+    }
+
+    public void sendBombProtectedAreaMessage(Player player) {
+        String message = configService.getMessages().bombs().bombProtectedArea();
+        sendMessage(player, message);
+    }
+
+    public void sendBombTimerTitle(Player player, int seconds, String location) {
+        String title = configService.getMessages().bombs().timerTitle()
+                .replace("<seconds>", String.valueOf(seconds))
+                .replace("<location>", location);
+        sendTitle(player, title, "");
+    }
+
+    public void sendBombTimerSubtitle(Player player, int seconds, String activator) {
+        String subtitle = configService.getMessages().bombs().timerSubtitle()
+                .replace("<seconds>", String.valueOf(seconds))
+                .replace("<activator>", activator);
+        sendTitle(player, "", subtitle);
+    }
+
+    public void sendExplosionWarningMessage(Player player) {
+        String message = configService.getMessages().bombs().explosionWarning();
+        sendMessage(player, message);
+    }
+
+    public void sendRadiationZoneCreatedMessage(Player player, int radius, int duration) {
+        String message = configService.getMessages().bombs().radiationZoneCreated()
+                .replace("<radius>", String.valueOf(radius))
+                .replace("<duration>", String.valueOf(duration));
+        sendMessage(player, message);
+    }
+
+    public ItemStack createBombItem() {
+        ItemStack bombItem = new ItemStack(org.bukkit.Material.PLAYER_HEAD);
+        org.bukkit.inventory.meta.SkullMeta meta = (org.bukkit.inventory.meta.SkullMeta) bombItem.getItemMeta();
+
+        if (meta != null) {
+            Component displayName = colorizeToComponent(configService.getMessages().bombs().bombItemName());
+            meta.displayName(displayName);
+
+            String loreText = configService.getMessages().bombs().bombItemLore();
+            List<Component> loreComponents = java.util.Arrays.stream(loreText.split("\\n"))
+                    .map(this::colorizeToComponent)
+                    .collect(java.util.stream.Collectors.toList());
+            meta.lore(loreComponents);
+
+            bombItem.setItemMeta(meta);
+        }
+
+        return bombItem;
     }
 
     private String colorize(String message) {
@@ -459,12 +562,99 @@ public class MessageUtil {
         message = message.replaceAll("&#([A-Fa-f0-9]{6})", "<#$1>");
         return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection()
                 .serialize(
-                    net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacyAmpersand()
-                            .deserialize(message)
+                        net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacyAmpersand()
+                                .deserialize(message)
                 );
     }
 
-    public Messages getMessages() {
-        return configService.getMessages();
+    private Component colorizeToComponent(String message) {
+        if (message == null) return Component.empty();
+
+        message = message.replaceAll("&#([A-Fa-f0-9]{6})", "<#$1>");
+        return LegacyComponentSerializer.legacyAmpersand().deserialize(message);
+    }
+
+    public void sendBombCancelledMessage(CommandSender sender) {
+        String message = configService.getMessages().bombs().bombCancelled();
+        sendMessage(sender, message);
+    }
+
+    public void sendBombForcedMessage(CommandSender sender) {
+        String message = configService.getMessages().bombs().bombForced();
+        sendMessage(sender, message);
+    }
+
+    public void sendNoBombFoundMessage(CommandSender sender) {
+        String message = configService.getMessages().bombs().noBombFound();
+        sendMessage(sender, message);
+    }
+
+    public void sendInvalidBombIdMessage(CommandSender sender) {
+        String message = configService.getMessages().bombs().invalidBombId();
+        sendMessage(sender, message);
+    }
+
+    public void sendBombListHeaderMessage(CommandSender sender) {
+        String message = configService.getMessages().bombs().bombListHeader();
+        sendMessage(sender, message);
+    }
+
+    public void sendBombListEmptyMessage(CommandSender sender) {
+        String message = configService.getMessages().bombs().bombListEmpty();
+        sendMessage(sender, message);
+    }
+
+    public void sendCooldownInfoMessage(CommandSender sender, String playerName) {
+        String message = configService.getMessages().bombs().cooldownInfo()
+                .replace("<player>", playerName);
+        sendMessage(sender, message);
+    }
+
+    public void sendCooldownExpiredMessage(CommandSender sender, String playerName, long seconds) {
+        String message = configService.getMessages().bombs().cooldownExpired()
+                .replace("<player>", playerName)
+                .replace("<seconds>", String.valueOf(seconds));
+        sendMessage(sender, message);
+    }
+
+    public void sendBombActivatedAtLocationMessage(CommandSender sender, int x, int y, int z) {
+        String message = configService.getMessages().bombs().bombActivated()
+                .replace("<x>", String.valueOf(x))
+                .replace("<y>", String.valueOf(y))
+                .replace("<z>", String.valueOf(z));
+        sendMessage(sender, message);
+    }
+
+    public void sendBombGivenToPlayerMessage(CommandSender sender, String playerName) {
+        String message = configService.getMessages().bombs().bombGivenToPlayer()
+                .replace("<player>", playerName);
+        sendMessage(sender, message);
+    }
+
+
+    public void sendBombInfoMessage(CommandSender sender, int radius, int depth, int duration, int cooldown, String radiationStatus, String mushroomStatus) {
+        String message = configService.getMessages().bombs().bombInfo()
+                .replace("<radius>", String.valueOf(radius))
+                .replace("<depth>", String.valueOf(depth))
+                .replace("<duration>", String.valueOf(duration))
+                .replace("<cooldown>", String.valueOf(cooldown))
+                .replace("<radiationStatus>", radiationStatus)
+                .replace("<mushroomStatus>", mushroomStatus);
+        sendMessage(sender, message);
+    }
+
+    public void sendBombListItemMessage(CommandSender sender, String id, String activator, int x, int y, int z) {
+        String message = configService.getMessages().bombs().bombListItem()
+                .replace("<id>", id)
+                .replace("<activator>", activator)
+                .replace("<x>", String.valueOf(x))
+                .replace("<y>", String.valueOf(y))
+                .replace("<z>", String.valueOf(z));
+        sendMessage(sender, message);
+    }
+
+    public void sendPlayersOnlyCommandMessage(CommandSender sender) {
+        String message = configService.getMessages().bombs().playersOnlyCommand();
+        sendMessage(sender, message);
     }
 }

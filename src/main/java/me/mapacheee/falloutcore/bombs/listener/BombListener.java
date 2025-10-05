@@ -1,0 +1,95 @@
+package me.mapacheee.falloutcore.bombs.listener;
+
+import com.google.inject.Inject;
+import com.thewinterframework.paper.listener.ListenerComponent;
+import me.mapacheee.falloutcore.bombs.entity.BombService;
+import me.mapacheee.falloutcore.shared.config.ConfigService;
+import me.mapacheee.falloutcore.shared.util.MessageUtil;
+import org.bukkit.Material;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.SkullMeta;
+import org.slf4j.Logger;
+
+@ListenerComponent
+public class BombListener implements Listener {
+
+    private final Logger logger;
+    private final BombService bombService;
+    private final MessageUtil messageUtil;
+    private final ConfigService configService;
+
+    @Inject
+    public BombListener(Logger logger, BombService bombService, MessageUtil messageUtil, ConfigService configService) {
+        this.logger = logger;
+        this.bombService = bombService;
+        this.messageUtil = messageUtil;
+        this.configService = configService;
+    }
+
+    @EventHandler
+    public void onPlayerInteract(PlayerInteractEvent event) {
+        if (!configService.getConfig().bomb().enabled()) {
+            return;
+        }
+
+        Player player = event.getPlayer();
+        ItemStack item = event.getItem();
+
+        if (event.getAction() != Action.RIGHT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_BLOCK) {
+            return;
+        }
+
+        if (item == null || item.getType() != Material.PLAYER_HEAD) {
+            return;
+        }
+
+        if (!isBombItem(item)) {
+            return;
+        }
+
+        event.setCancelled(true);
+
+        if (!bombService.canPlayerUseBomb(player)) {
+            long cooldown = bombService.getPlayerCooldown(player);
+            if (cooldown > 0) {
+                messageUtil.sendBombCooldownMessage(player, cooldown);
+            } else {
+                messageUtil.sendNoPermissionMessage(player);
+            }
+            return;
+        }
+
+        if (confirmBombActivation(player)) {
+            if (bombService.activateNuclearBomb(player, player.getLocation())) {
+                if (item.getAmount() > 1) {
+                    item.setAmount(item.getAmount() - 1);
+                } else {
+                    player.getInventory().setItemInMainHand(null);
+                }
+
+                messageUtil.sendBombActivatedMessage(player);
+            } else {
+                messageUtil.sendBombActivationFailedMessage(player);
+            }
+        }
+    }
+
+    private boolean isBombItem(ItemStack item) {
+        if (!(item.getItemMeta() instanceof SkullMeta meta)) {
+            return false;
+        }
+
+        String displayName = meta.getDisplayName();
+        return displayName != null && displayName.contains("BOMBA NUCLEAR");
+    }
+
+    private boolean confirmBombActivation(Player player) {
+        messageUtil.sendBombConfirmationMessage(player);
+        return true;
+    }
+}

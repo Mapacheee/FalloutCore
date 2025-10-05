@@ -339,4 +339,240 @@ public class EffectsService {
             default -> ParticleTypes.DAMAGE_INDICATOR;
         };
     }
+
+    // Nuclear Bomb Effects
+    public void triggerFlashEffect(Player player) {
+        try {
+            // Efecto de flash cegador blanco
+            WrapperPlayServerParticle flashParticle = new WrapperPlayServerParticle(
+                new Particle<>(ParticleTypes.FLASH),
+                true,
+                new Vector3d(player.getLocation().getX(), player.getLocation().getY() + 1, player.getLocation().getZ()),
+                new Vector3f(0, 0, 0),
+                10.0f,
+                100
+            );
+
+            PacketEvents.getAPI().getPlayerManager().sendPacket(player, flashParticle);
+            logger.debug("Flash effect enviado a {}", player.getName());
+        } catch (Exception e) {
+            logger.warn("Error al enviar efecto de flash a {}: {}", player.getName(), e.getMessage());
+        }
+    }
+
+    public void triggerCameraShake(Player player) {
+        // Simular sacudida de cámara moviendo al jugador ligeramente
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            Location loc = player.getLocation();
+            for (int i = 0; i < 10; i++) {
+                Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                    double offsetX = (Math.random() - 0.5) * 0.1;
+                    double offsetZ = (Math.random() - 0.5) * 0.1;
+                    Location newLoc = player.getLocation().add(offsetX, 0, offsetZ);
+                    newLoc.setYaw(loc.getYaw());
+                    newLoc.setPitch(loc.getPitch());
+                    player.teleport(newLoc);
+                }, i * 2L);
+            }
+        });
+    }
+
+    public void triggerHeatDistortion(Player player) {
+        try {
+            // Efectos de distorsión con partículas de calor
+            Location loc = player.getLocation();
+
+            for (int i = 0; i < 50; i++) {
+                double offsetX = (Math.random() - 0.5) * 20;
+                double offsetY = Math.random() * 10;
+                double offsetZ = (Math.random() - 0.5) * 20;
+
+                WrapperPlayServerParticle heatParticle = new WrapperPlayServerParticle(
+                    new Particle<>(ParticleTypes.FLAME),
+                    false,
+                    new Vector3d(loc.getX() + offsetX, loc.getY() + offsetY, loc.getZ() + offsetZ),
+                    new Vector3f((float) offsetX * 0.02f, 0.5f, (float) offsetZ * 0.02f),
+                    0.3f,
+                    3
+                );
+
+                PacketEvents.getAPI().getPlayerManager().sendPacket(player, heatParticle);
+            }
+        } catch (Exception e) {
+            logger.warn("Error al enviar efecto de distorsión a {}: {}", player.getName(), e.getMessage());
+        }
+    }
+
+    public void triggerRadioactiveOverlay(Player player, int durationSeconds) {
+        try {
+            // Crear overlay radioactivo con partículas verdes
+            UUID playerId = player.getUniqueId();
+
+            BukkitRunnable overlayTask = new BukkitRunnable() {
+                int ticks = 0;
+                final int maxTicks = durationSeconds * 20;
+
+                @Override
+                public void run() {
+                    if (ticks >= maxTicks || !player.isOnline()) {
+                        cancel();
+                        return;
+                    }
+
+                    Location loc = player.getEyeLocation();
+
+                    // Partículas verdes alrededor de la pantalla
+                    for (int i = 0; i < 15; i++) {
+                        double angle = (Math.PI * 2 * i) / 15;
+                        double x = Math.cos(angle) * 1.5;
+                        double z = Math.sin(angle) * 1.5;
+
+                        WrapperPlayServerParticle radioactiveParticle = new WrapperPlayServerParticle(
+                            new Particle<>(ParticleTypes.HAPPY_VILLAGER),
+                            false,
+                            new Vector3d(loc.getX() + x, loc.getY(), loc.getZ() + z),
+                            new Vector3f(0, 0, 0),
+                            0.1f,
+                            1
+                        );
+
+                        PacketEvents.getAPI().getPlayerManager().sendPacket(player, radioactiveParticle);
+                    }
+
+                    ticks++;
+                }
+            };
+
+            overlayTask.runTaskTimer(plugin, 0L, 2L); // Cada 2 ticks
+
+        } catch (Exception e) {
+            logger.warn("Error al crear overlay radioactivo para {}: {}", player.getName(), e.getMessage());
+        }
+    }
+
+    public void spawnFireballParticles(Location center, int radius) {
+        try {
+            // Efectos de bola de fuego expandiéndose
+            for (Player player : center.getWorld().getPlayers()) {
+                if (player.getLocation().distance(center) <= radius + 100) {
+
+                    // Partículas de fuego en la esfera
+                    for (int i = 0; i < 30; i++) {
+                        double phi = Math.random() * Math.PI * 2;
+                        double theta = Math.random() * Math.PI;
+
+                        double x = radius * Math.sin(theta) * Math.cos(phi);
+                        double y = radius * Math.sin(theta) * Math.sin(phi);
+                        double z = radius * Math.cos(theta);
+
+                        WrapperPlayServerParticle fireParticle = new WrapperPlayServerParticle(
+                            new Particle<>(ParticleTypes.FLAME),
+                            false,
+                            new Vector3d(center.getX() + x, center.getY() + y, center.getZ() + z),
+                            new Vector3f((float) x * 0.1f, (float) y * 0.1f, (float) z * 0.1f),
+                            0.5f,
+                            5
+                        );
+
+                        PacketEvents.getAPI().getPlayerManager().sendPacket(player, fireParticle);
+                    }
+
+                    // Partículas de explosión
+                    for (int i = 0; i < 20; i++) {
+                        double offsetX = (Math.random() - 0.5) * radius * 2;
+                        double offsetY = (Math.random() - 0.5) * radius * 2;
+                        double offsetZ = (Math.random() - 0.5) * radius * 2;
+
+                        WrapperPlayServerParticle explosionParticle = new WrapperPlayServerParticle(
+                            new Particle<>(ParticleTypes.EXPLOSION),
+                            false,
+                            new Vector3d(center.getX() + offsetX, center.getY() + offsetY, center.getZ() + offsetZ),
+                            new Vector3f(0, 0, 0),
+                            1.0f,
+                            1
+                        );
+
+                        PacketEvents.getAPI().getPlayerManager().sendPacket(player, explosionParticle);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.warn("Error al generar partículas de bola de fuego: {}", e.getMessage());
+        }
+    }
+
+    public void spawnMushroomCloud(Location center, me.mapacheee.falloutcore.shared.config.Config.MushroomConfig mushroomConfig) {
+        try {
+            // Crear hongo nuclear con partículas
+            int height = mushroomConfig.height();
+            int columnRadius = mushroomConfig.columnRadius();
+            int headRadius = mushroomConfig.headRadius();
+            int particleCount = mushroomConfig.particleCount();
+
+            for (Player player : center.getWorld().getPlayers()) {
+                if (player.getLocation().distance(center) <= height + 50) {
+
+                    // Columna del hongo
+                    for (int y = 0; y < height; y += 3) {
+                        for (int i = 0; i < particleCount / 4; i++) {
+                            double angle = (Math.PI * 2 * i) / (particleCount / 4);
+                            double radius = columnRadius * (1.0 - (double) y / height * 0.7); // Se estrecha hacia arriba
+
+                            double x = Math.cos(angle) * radius + (Math.random() - 0.5) * 2;
+                            double z = Math.sin(angle) * radius + (Math.random() - 0.5) * 2;
+
+                            WrapperPlayServerParticle smokeParticle = new WrapperPlayServerParticle(
+                                new Particle<>(ParticleTypes.LARGE_SMOKE),
+                                false,
+                                new Vector3d(center.getX() + x, center.getY() + y, center.getZ() + z),
+                                new Vector3f(0, 0.1f, 0),
+                                0.1f,
+                                1
+                            );
+
+                            PacketEvents.getAPI().getPlayerManager().sendPacket(player, smokeParticle);
+                        }
+                    }
+
+                    // Cabeza del hongo
+                    int headY = height - 20;
+                    for (int i = 0; i < particleCount; i++) {
+                        double phi = Math.random() * Math.PI * 2;
+                        double theta = Math.random() * Math.PI;
+
+                        double x = headRadius * Math.sin(theta) * Math.cos(phi);
+                        double y = headRadius * Math.sin(theta) * Math.sin(phi) * 0.3; // Más plano
+                        double z = headRadius * Math.cos(theta);
+
+                        WrapperPlayServerParticle cloudParticle = new WrapperPlayServerParticle(
+                            new Particle<>(ParticleTypes.CLOUD),
+                            false,
+                            new Vector3d(center.getX() + x, center.getY() + headY + y, center.getZ() + z),
+                            new Vector3f(0, 0.05f, 0),
+                            0.2f,
+                            2
+                        );
+
+                        PacketEvents.getAPI().getPlayerManager().sendPacket(player, cloudParticle);
+
+                        // Partículas de ceniza cayendo
+                        if (i % 3 == 0) {
+                            WrapperPlayServerParticle ashParticle = new WrapperPlayServerParticle(
+                                new Particle<>(ParticleTypes.ASH),
+                                false,
+                                new Vector3d(center.getX() + x, center.getY() + headY + y + 10, center.getZ() + z),
+                                new Vector3f((float) (Math.random() - 0.5) * 0.1f, -0.2f, (float) (Math.random() - 0.5) * 0.1f),
+                                0.1f,
+                                1
+                            );
+
+                            PacketEvents.getAPI().getPlayerManager().sendPacket(player, ashParticle);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.warn("Error al generar hongo nuclear: {}", e.getMessage());
+        }
+    }
 }

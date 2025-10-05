@@ -8,8 +8,10 @@ import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 public record Messages(
     General general,
     Faction faction,
-    Radiation radiation
+    Radiation radiation,
+    Bombs bombs
 ) {
+
 
     @ConfigSerializable
     public record General(
@@ -111,5 +113,34 @@ public record Messages(
         String exitSubtitle,
         String armorProtectionTitle,
         String armorProtectionSubtitle
+    ) {}
+
+    @ConfigSerializable
+    public record Bombs(
+        String moduleDisabled,
+        String bombGiven,
+        String bombActivated,
+        String bombActivationFailed,
+        String bombConfirmation,
+        String bombCooldown,
+        String bombProtectedArea,
+        String timerTitle,
+        String timerSubtitle,
+        String explosionWarning,
+        String radiationZoneCreated,
+        String bombCancelled,
+        String bombForced,
+        String noBombFound,
+        String invalidBombId,
+        String bombListHeader,
+        String bombListEmpty,
+        String cooldownInfo,
+        String cooldownExpired,
+        String bombItemName,
+        String bombGivenToPlayer,
+        String bombInfo,
+        String bombListItem,
+        String playersOnlyCommand,
+        String bombItemLore
     ) {}
 }
